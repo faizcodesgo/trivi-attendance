@@ -1,6 +1,8 @@
 const path = require("path");
 require("dotenv").config();
 
+console.log("CLIENT_ID:", process.env.GOOGLECLIENT_ID);
+
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
