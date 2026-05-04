@@ -21,16 +21,24 @@
       margin-bottom: 20px;
     }
 
-    .btn {
-      display: block;
-      margin: 0 auto 20px;
-      padding: 12px 20px;
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    input, button {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
       background: black;
       color: white;
-      border: none;
       cursor: pointer;
-      border-radius: 6px;
-      font-size: 14px;
+      border: none;
     }
 
     .card {
@@ -73,7 +81,11 @@
 
   <h2>📊 Attendance Dashboard</h2>
 
-  <button class="btn" onclick="loadData()">Load Attendance</button>
+  <div class="controls">
+    <input type="date" id="dateFilter">
+    <button onclick="loadData()">Load All</button>
+    <button onclick="filterByDate()">Filter</button>
+  </div>
 
   <div class="card">
     <table>
@@ -94,6 +106,9 @@
 </div>
 
 <script>
+
+let allData = [];
+
 async function loadData() {
   try {
     const res = await fetch("/attendance", {
@@ -101,34 +116,51 @@ async function loadData() {
     });
 
     const data = await res.json();
+    allData = data;
 
-    const tbody = document.getElementById("tbody");
-    tbody.innerHTML = "";
-
-    data.forEach(item => {
-      const row = document.createElement("tr");
-
-      row.innerHTML = `
-        <td>${item.name}</td>
-        <td>${item.date}</td>
-        <td>${item.day}</td>
-        <td>${item.time}</td>
-        <td>${item.workTypes.join(", ")}</td>
-        <td>
-          ${item.imageUrl 
-            ? `<img src="${item.imageUrl}" width="70">` 
-            : "No image"}
-        </td>
-      `;
-
-      tbody.appendChild(row);
-    });
+    renderTable(data);
 
   } catch (err) {
     alert("Error loading data");
-    console.error(err);
   }
 }
+
+function filterByDate() {
+  const selectedDate = document.getElementById("dateFilter").value;
+
+  if (!selectedDate) {
+    alert("Select a date first");
+    return;
+  }
+
+  const filtered = allData.filter(item => item.date === selectedDate);
+  renderTable(filtered);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById("tbody");
+  tbody.innerHTML = "";
+
+  data.forEach(item => {
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.date}</td>
+      <td>${item.day}</td>
+      <td>${item.time}</td>
+      <td>${item.workTypes.join(", ")}</td>
+      <td>
+        ${item.imageUrl 
+          ? `<img src="${item.imageUrl}" width="70">` 
+          : "No image"}
+      </td>
+    `;
+
+    tbody.appendChild(row);
+  });
+}
+
 </script>
 
 </body>
