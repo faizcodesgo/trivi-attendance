@@ -6,29 +6,50 @@
 
   <style>
     body {
-      padding: 20px;
+      font-family: Arial;
+      background: #f4f6f8;
+      padding: 30px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
     }
 
     h2 {
       text-align: center;
+      margin-bottom: 20px;
     }
 
-    button {
-      margin: 20px 0;
-      padding: 10px;
+    .btn {
+      display: block;
+      margin: 0 auto 20px;
+      padding: 12px 20px;
+      background: black;
+      color: white;
+      border: none;
       cursor: pointer;
+      border-radius: 6px;
+      font-size: 14px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+      padding: 20px;
+      overflow-x: auto;
     }
 
     table {
-      border-collapse: collapse;
       width: 100%;
-      background: white;
+      border-collapse: collapse;
     }
 
     th, td {
-      padding: 10px;
-      border: 1px solid #ccc;
+      padding: 12px;
       text-align: center;
+      border-bottom: 1px solid #eee;
     }
 
     th {
@@ -36,37 +57,46 @@
       color: white;
     }
 
+    tr:hover {
+      background: #f9f9f9;
+    }
+
     img {
-      border-radius: 5px;
+      border-radius: 6px;
     }
   </style>
 </head>
 
 <body>
 
-<h2>📊 Attendance Dashboard</h2>
+<div class="container">
 
-<button onclick="loadData()">Load Attendance</button>
+  <h2>📊 Attendance Dashboard</h2>
 
-<table id="table">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Date</th>
-      <th>Day</th>
-      <th>Time</th>
-      <th>Work Type</th>
-      <th>Image</th>
-    </tr>
-  </thead>
-  <tbody id="tbody"></tbody>
-</table>
+  <button class="btn" onclick="loadData()">Load Attendance</button>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Day</th>
+          <th>Time</th>
+          <th>Work Type</th>
+          <th>Image</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+  </div>
+
+</div>
 
 <script>
 async function loadData() {
   try {
     const res = await fetch("/attendance", {
-      method: "GET",
       credentials: "include"
     });
 
@@ -86,7 +116,7 @@ async function loadData() {
         <td>${item.workTypes.join(", ")}</td>
         <td>
           ${item.imageUrl 
-            ? `<img src="${item.imageUrl}" width="80">` 
+            ? `<img src="${item.imageUrl}" width="70">` 
             : "No image"}
         </td>
       `;
@@ -95,7 +125,7 @@ async function loadData() {
     });
 
   } catch (err) {
-    alert("Failed to load data");
+    alert("Error loading data");
     console.error(err);
   }
 }
