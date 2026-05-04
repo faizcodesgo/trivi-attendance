@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<h2>Attendance Dashboard</h2>
+
+<button onclick="loadData()">Load Attendance</button>
+
+<table border="1" width="100%" id="table">
+  <tr>
+    <th>Name</th>
+    <th>Date</th>
+    <th>Work Type</th>
+    <th>Image</th>
+  </tr>
+</table>
+
+<script>
+async function loadData() {
+  const res = await fetch("/api/attendance");
+  const data = await res.json();
+
+  const table = document.getElementById("table");
+
+  data.forEach(item => {
+    const row = table.insertRow();
+
+    row.insertCell(0).innerText = item.name;
+    row.insertCell(1).innerText = item.date;
+    row.insertCell(2).innerText = item.workTypes;
+
+    const imgCell = row.insertCell(3);
+    if (item.imageUrl) {
+      imgCell.innerHTML = `<img src="${item.imageUrl}" width="80">`;
+    } else {
+      imgCell.innerText = "No image";
+    }
+  });
+}
+</script>
+
+</body>
+</html>
