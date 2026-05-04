@@ -1,5 +1,6 @@
 const path = require("path");
 require("dotenv").config();
+console.log("TEST:", process.env.TEST_VAR);
 
 console.log("CLIENT_ID:", process.env.GOOGLECLIENT_ID);
 
