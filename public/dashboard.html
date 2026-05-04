@@ -1,46 +1,103 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin Dashboard</title>
+  <title>Attendance Dashboard</title>
   <link rel="stylesheet" href="style.css">
+
+  <style>
+    body {
+      padding: 20px;
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    button {
+      margin: 20px 0;
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: white;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    th {
+      background: black;
+      color: white;
+    }
+
+    img {
+      border-radius: 5px;
+    }
+  </style>
 </head>
 
 <body>
 
-<h2>Attendance Dashboard</h2>
+<h2>📊 Attendance Dashboard</h2>
 
 <button onclick="loadData()">Load Attendance</button>
 
-<table border="1" width="100%" id="table">
-  <tr>
-    <th>Name</th>
-    <th>Date</th>
-    <th>Work Type</th>
-    <th>Image</th>
-  </tr>
+<table id="table">
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Date</th>
+      <th>Day</th>
+      <th>Time</th>
+      <th>Work Type</th>
+      <th>Image</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
 </table>
 
 <script>
 async function loadData() {
-  const res = await fetch("/api/attendance");
-  const data = await res.json();
+  try {
+    const res = await fetch("/attendance", {
+      method: "GET",
+      credentials: "include"
+    });
 
-  const table = document.getElementById("table");
+    const data = await res.json();
 
-  data.forEach(item => {
-    const row = table.insertRow();
+    const tbody = document.getElementById("tbody");
+    tbody.innerHTML = "";
 
-    row.insertCell(0).innerText = item.name;
-    row.insertCell(1).innerText = item.date;
-    row.insertCell(2).innerText = item.workTypes;
+    data.forEach(item => {
+      const row = document.createElement("tr");
 
-    const imgCell = row.insertCell(3);
-    if (item.imageUrl) {
-      imgCell.innerHTML = `<img src="${item.imageUrl}" width="80">`;
-    } else {
-      imgCell.innerText = "No image";
-    }
-  });
+      row.innerHTML = `
+        <td>${item.name}</td>
+        <td>${item.date}</td>
+        <td>${item.day}</td>
+        <td>${item.time}</td>
+        <td>${item.workTypes.join(", ")}</td>
+        <td>
+          ${item.imageUrl 
+            ? `<img src="${item.imageUrl}" width="80">` 
+            : "No image"}
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+  } catch (err) {
+    alert("Failed to load data");
+    console.error(err);
+  }
 }
 </script>
 

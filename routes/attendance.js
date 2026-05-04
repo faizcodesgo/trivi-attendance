@@ -4,9 +4,15 @@ const router = express.Router();
 const multer = require("multer");
 const Attendance = require("../models/Attendance");
 
+// --------------------
+// Multer setup
+// --------------------
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
+// --------------------
+// POST /attendance
+// --------------------
 router.post("/", upload.single("image"), async (req, res) => {
   try {
     const name = req.body.name;
@@ -61,7 +67,25 @@ router.post("/", upload.single("image"), async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
+    console.error("POST ERROR:", err);
+    res.status(500).json({
+      success: false,
+      message: err.message,
+    });
+  }
+});
+
+// --------------------
+// GET /attendance  ✅ (FOR DASHBOARD)
+// --------------------
+router.get("/", async (req, res) => {
+  try {
+    const data = await Attendance.find().sort({ createdAt: -1 });
+
+    res.json(data);
+
+  } catch (err) {
+    console.error("GET ERROR:", err);
     res.status(500).json({
       success: false,
       message: err.message,
