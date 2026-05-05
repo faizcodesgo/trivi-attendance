@@ -1,7 +1,6 @@
 alert("JS is connected");
 
 async function submitAttendance() {
-  const name = document.getElementById("name").value;
   const msg = document.getElementById("msg");
 
   if (!name) {
@@ -35,7 +34,6 @@ async function submitAttendance() {
   }
 
   const formData = new FormData();
-  formData.append("name", name);
   formData.append("date", date);
 
   workTypes.forEach(type => {

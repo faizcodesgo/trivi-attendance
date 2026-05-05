@@ -7,6 +7,10 @@ const attendanceSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    email: {
+      type: String,
+      required: true,
+    },
     date: {
       type: String,
       required: true,

@@ -4,22 +4,27 @@ const router = express.Router();
 const multer = require("multer");
 const Attendance = require("../models/Attendance");
 
-// --------------------
-// Multer setup
-// --------------------
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
+
+// 🔐 Require login
+function ensureAuth(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  return res.status(401).json({ message: "Not logged in" });
+}
 
 // --------------------
 // POST /attendance
 // --------------------
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
-    const name = req.body.name;
+    const email = req.user.emails[0].value; // 🔥 UNIQUE USER
+    const name = req.user.displayName;      // optional (auto-fill name)
     const date = req.body.date;
+
     let workTypes = req.body.workTypes;
 
-    if (!name || !date || !workTypes) {
+    if (!date || !workTypes) {
       return res.status(400).json({
         success: false,
         message: "Missing fields",
@@ -34,7 +39,8 @@ router.post("/", upload.single("image"), async (req, res) => {
       weekday: "long",
     });
 
-    const existing = await Attendance.findOne({ name, date });
+    // 🔥 CHECK using email + date (NOT name)
+    const existing = await Attendance.findOne({ email, date });
 
     if (existing) {
       existing.workTypes = workTypes;
@@ -51,6 +57,7 @@ router.post("/", upload.single("image"), async (req, res) => {
 
     const newEntry = new Attendance({
       name,
+      email, // 🔥 ADD THIS
       date,
       day,
       time: new Date().toLocaleTimeString(),
@@ -67,7 +74,7 @@ router.post("/", upload.single("image"), async (req, res) => {
     });
 
   } catch (err) {
-    console.error("POST ERROR:", err);
+    console.error(err);
     res.status(500).json({
       success: false,
       message: err.message,
@@ -75,22 +82,13 @@ router.post("/", upload.single("image"), async (req, res) => {
   }
 });
 
-// --------------------
-// GET /attendance  ✅ (FOR DASHBOARD)
-// --------------------
-router.get("/", async (req, res) => {
-  try {
-    const data = await Attendance.find().sort({ createdAt: -1 });
 
-    res.json(data);
-
-  } catch (err) {
-    console.error("GET ERROR:", err);
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-  }
+// --------------------
+// GET /attendance (for dashboard)
+// --------------------
+router.get("/", ensureAuth, async (req, res) => {
+  const data = await Attendance.find().sort({ date: -1 });
+  res.json(data);
 });
 
 module.exports = router;
