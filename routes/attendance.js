@@ -5,8 +5,10 @@ const multer = require("multer");
 const Attendance = require("../models/Attendance");
 const allowedUsers = require("../config/allowedUsers");
 
-const upload = multer({ storage: multer.memoryStorage() });
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
+// ---------------- AUTH ----------------
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.status(401).json({ message: "Not logged in" });
@@ -14,10 +16,9 @@ function ensureAuth(req, res, next) {
 
 function ensureAdmin(req, res, next) {
   const email = req.user?.emails?.[0]?.value?.toLowerCase();
+  const admins = allowedUsers.map(e => e.toLowerCase());
 
-  if (allowedUsers.map(e => e.toLowerCase()).includes(email)) {
-    return next();
-  }
+  if (admins.includes(email)) return next();
 
   return res.status(403).json({ message: "Not authorized" });
 }
@@ -25,43 +26,41 @@ function ensureAdmin(req, res, next) {
 // ---------------- POST ----------------
 router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
-    const email = req.user?.emails?.[0]?.value;
+    const email = req.user.emails?.[0]?.value;
     const name = req.user.displayName || "User";
 
     const now = new Date();
 
-    const date = now.toLocaleDateString("en-CA", {
+    const date = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    const day = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      timeZone: "Asia/Kolkata"
+    });
+    const time = now.toLocaleTimeString("en-IN", {
       timeZone: "Asia/Kolkata"
     });
 
     let workTypes = req.body.workTypes;
 
-    // 🔥 FORCE ARRAY
     if (!workTypes) {
       return res.status(400).json({ message: "Select at least one option" });
     }
 
-    if (typeof workTypes === "string") {
+    if (!Array.isArray(workTypes)) {
       workTypes = [workTypes];
     }
 
     if (workTypes.length > 2) {
-      return res.status(400).json({ message: "Max 2 selections allowed" });
+      return res.status(400).json({ message: "Only 2 allowed" });
     }
 
     const updated = await Attendance.findOneAndUpdate(
       { email, date },
-      {
-        name,
-        email,
-        date,
-        workTypes,
-        imageUrl: null
-      },
+      { name, email, date, day, time, workTypes, imageUrl: null },
       { new: true, upsert: true }
     );
 
-    res.json({ success: true, data: updated });
+    res.json({ success: true, message: "Saved", data: updated });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -74,34 +73,30 @@ router.get("/", ensureAuth, async (req, res) => {
   res.json(data);
 });
 
-// ---------------- PUT (STRICT 2 LIMIT) ----------------
+// ---------------- UPDATE ----------------
 router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
-  try {
-    let { workTypes } = req.body;
+  let { workTypes } = req.body;
 
-    if (!workTypes) {
-      return res.status(400).json({ message: "workTypes required" });
-    }
-
-    if (typeof workTypes === "string") {
-      workTypes = [workTypes];
-    }
-
-    if (workTypes.length > 2) {
-      return res.status(400).json({ message: "Max 2 allowed" });
-    }
-
-    const updated = await Attendance.findByIdAndUpdate(
-      req.params.id,
-      { workTypes },
-      { new: true }
-    );
-
-    res.json({ success: true, data: updated });
-
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  if (!Array.isArray(workTypes)) {
+    workTypes = [workTypes];
   }
+
+  if (workTypes.length > 2) {
+    return res.status(400).json({ message: "Only 2 allowed" });
+  }
+
+  const updated = await Attendance.findByIdAndUpdate(
+    req.params.id,
+    {
+      workTypes,
+      time: new Date().toLocaleTimeString("en-IN", {
+        timeZone: "Asia/Kolkata"
+      })
+    },
+    { new: true }
+  );
+
+  res.json({ success: true, data: updated });
 });
 
 // ---------------- DELETE ----------------
