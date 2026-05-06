@@ -10,10 +10,10 @@ require("./config/passport");
 
 const connectDB = require("./config/db");
 const attendanceRoutes = require("./routes/attendance");
+const allowedUsers = require("./config/allowedUsers");
 
 const app = express();
 
-// ✅ IMPORTANT FOR RENDER (fixes login issue)
 app.set("trust proxy", 1);
 
 // --- DB ---
@@ -28,14 +28,14 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Session (FIXED) ---
+// --- Session ---
 app.use(session({
   secret: "trivi_secret",
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,      // 🔥 REQUIRED for Render (https)
-    sameSite: "none"   // 🔥 REQUIRED for cross-site cookies
+    secure: true,
+    sameSite: "none"
   }
 }));
 
@@ -48,16 +48,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// --- Static frontend ---
+// --- Static ---
 app.use(express.static(path.join(__dirname, "public")));
 
-// ---------------- AUTH ----------------
+// 🔐 Auth check
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
-  return res.status(401).json({ message: "Not logged in" });
+  return res.redirect("/login");
 }
 
-// ---------------- GOOGLE LOGIN ----------------
+// ---------------- AUTH ----------------
 app.get("/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
@@ -73,7 +73,7 @@ app.get("/auth/google/callback",
 
 app.get("/auth/logout", (req, res) => {
   req.logout(() => {
-    res.redirect("/");
+    res.redirect("/login");
   });
 });
 
@@ -81,24 +81,40 @@ app.get("/unauthorized", (req, res) => {
   res.send("Access Denied ❌");
 });
 
-// ---------------- FRONTEND ----------------
-app.get("/", (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
-  }
-  return res.redirect("/auth/google");
+// ---------------- ROUTES ----------------
+
+// 🔥 LOGIN PAGE FIRST
+app.get("/login", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// ---------------- ATTENDANCE API ----------------
+// 🔥 HOME (ONLY AFTER LOGIN)
+app.get("/", ensureAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// ---------------- ATTENDANCE ----------------
 app.use("/attendance", attendanceRoutes);
 
-// ---------------- DASHBOARD PAGE ----------------
+// ---------------- DASHBOARD (PROTECTED) ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
+  const email = req.user.emails[0].value;
+
+  if (!allowedUsers.includes(email)) {
+    return res.send("Access Denied ❌");
+  }
+
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
 // ---------------- DASHBOARD API ----------------
 app.get("/api/attendance", ensureAuth, async (req, res) => {
+  const email = req.user.emails[0].value;
+
+  if (!allowedUsers.includes(email)) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
   try {
     const Attendance = require("./models/Attendance");
     const data = await Attendance.find().sort({ date: -1 });
@@ -111,5 +127,5 @@ app.get("/api/attendance", ensureAuth, async (req, res) => {
 // ---------------- START ----------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running`);
+  console.log("🚀 Server running");
 });
