@@ -37,7 +37,7 @@ app.use(session({
   cookie: {
     secure: true,
     sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7 // ✅ 7 days
+    maxAge: 1000 * 60 * 60 * 24 * 7
   }
 }));
 
@@ -49,15 +49,6 @@ app.use((req, res, next) => {
   console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
   next();
 });
-
-// --- Static ---
-app.use("login", express.static(path.join(__dirname, "public")));
-app.use((req, res, next)=> {
-  if (req.isAuthenticated()) return next();
-  return res.redirect("/login");
-});
-app.use(express.static(path.join(__dirname, "public")));
-
 
 // 🔐 Auth middleware
 function ensureAuth(req, res, next) {
@@ -94,7 +85,7 @@ app.get("/unauthorized", (req, res) => {
 
 // ---------------- ROUTES ----------------
 
-// 🔥 LOGIN PAGE
+// ✅ LOGIN (public)
 app.get("/login", (req, res) => {
   if (req.isAuthenticated()) {
     return res.redirect("/");
@@ -102,13 +93,16 @@ app.get("/login", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// 🔥 HOME
+// ✅ STATIC FILES (only after login)
+app.use(express.static(path.join(__dirname, "public")));
+
+// ✅ HOME (protected)
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 // ---------------- ATTENDANCE ----------------
-app.use("/attendance", attendanceRoutes);
+app.use("/attendance", ensureAuth, attendanceRoutes);
 
 // ---------------- DASHBOARD ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
