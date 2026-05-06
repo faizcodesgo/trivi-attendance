@@ -51,7 +51,13 @@ app.use((req, res, next) => {
 });
 
 // --- Static ---
+app.use("login", express.static(path.join(__dirname, "public")));
+app.use((req, res, next)=> {
+  if (req.isAuthenticated()) return next();
+  return res.redirect("/login");
+});
 app.use(express.static(path.join(__dirname, "public")));
+
 
 // 🔐 Auth middleware
 function ensureAuth(req, res, next) {
