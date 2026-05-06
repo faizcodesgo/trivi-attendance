@@ -14,7 +14,7 @@
       <h2>TriVi Infracons</h2>
       <p>Employee Attendance System</p>
 
-      <!-- 🔥 Admin-only button -->
+      <!-- Admin only -->
       <button id="dashboardBtn" style="display:none;" onclick="goDashboard()">
         Dashboard
       </button>
@@ -23,18 +23,21 @@
     <div class="card">
 
       <div class="checkboxes">
-        <label><input type="checkbox" value="Work From Home"> Work From Home</label>
-        <label><input type="checkbox" value="Office Management"> Office</label>
-        <label><input type="checkbox" value="Site Visit"> Site Visit</label>
-        <label><input type="checkbox" value="Leave"> Leave</label>
-        <label><input type="checkbox" value="Government Holiday"> Govt Holiday</label>
+        <label><input type="checkbox" name="workTypes" value="Work From Home"> Work From Home</label>
+        <label><input type="checkbox" name="workTypes" value="Office Management"> Office</label>
+        <label><input type="checkbox" name="workTypes" value="Site Visit"> Site Visit</label>
+        <label><input type="checkbox" name="workTypes" value="Leave"> Leave</label>
+        <label><input type="checkbox" name="workTypes" value="Government Holiday"> Govt Holiday</label>
       </div>
 
       <input type="file" id="image" style="display:none;">
 
       <button onclick="submitAttendance()">Submit Attendance</button>
 
-      <!-- 🔥 LOGOUT AT END -->
+      <button onclick="resetForm()" style="background:orange;">
+        Reset
+      </button>
+
       <a href="/auth/logout">
         <button>Logout</button>
       </a>
@@ -47,7 +50,6 @@
 
   <script src="app.js"></script>
 
-  <!-- 🔥 Admin check script -->
   <script>
     async function checkAdmin() {
       try {

@@ -60,6 +60,7 @@ app.get("/auth/google/callback",
     failureRedirect: "/login"
   }),
   (req, res) => {
+    // 🔥 ALWAYS GO TO HOME (NOT dashboard)
     res.redirect("/");
   }
 );
@@ -68,25 +69,15 @@ app.get("/auth/logout", (req, res) => {
   req.logout(() => res.redirect("/login"));
 });
 
-// ---------------- ROOT FIX (STRICT LOGIN FIRST) ----------------
-app.get("/", (req, res) => {
-  if (!req.isAuthenticated()) {
-    return res.redirect("/login");
-  }
-
-  const email = req.user?.emails?.[0]?.value;
-
-  if (!allowedUsers.includes(email)) {
-    return res.redirect("/login");
-  }
-
-  return res.redirect("/dashboard");
-});
-
-// ---------------- STATIC (AFTER AUTH LOGIC ONLY) ----------------
+// ---------------- STATIC ----------------
 app.use(express.static(path.join(__dirname, "public")));
 
-// ---------------- DASHBOARD ----------------
+// ---------------- HOME PAGE (AFTER LOGIN) ----------------
+app.get("/", ensureAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// ---------------- DASHBOARD (PROTECTED) ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
   const email = req.user?.emails?.[0]?.value;
 
@@ -97,14 +88,15 @@ app.get("/dashboard", ensureAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
-// ---------------- ATTENDANCE ----------------
+// ---------------- API ----------------
 app.use("/attendance", ensureAuth, attendanceRoutes);
 
-// ---------------- ADMIN ----------------
 app.get("/api/check-admin", ensureAuth, (req, res) => {
   const email = req.user?.emails?.[0]?.value;
 
-  res.json({ isAdmin: allowedUsers.includes(email) });
+  res.json({
+    isAdmin: allowedUsers.includes(email)
+  });
 });
 
 const PORT = process.env.PORT || 5000;
