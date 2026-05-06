@@ -52,13 +52,8 @@
       border: none;
     }
 
-    .danger {
-      background: red;
-    }
-
-    .edit {
-      background: #007bff;
-    }
+    .danger { background: red; }
+    .edit { background: #007bff; }
 
     .stats {
       display: flex;
@@ -95,6 +90,46 @@
       background: black;
       color: white;
     }
+
+    /* ===== MODAL ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 10px;
+    }
+
+    .checkbox-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 10px 0;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+    }
+
+    .reset {
+      background: orange;
+    }
   </style>
 </head>
 
@@ -106,9 +141,8 @@
 
   <!-- CONTROLS -->
   <div class="controls">
-
     <div class="control-group">
-      <label>Search (Name / Email)</label>
+      <label>Search</label>
       <input type="text" id="searchInput">
     </div>
 
@@ -118,18 +152,17 @@
     </div>
 
     <div class="control-group">
-      <label>Range From</label>
+      <label>From</label>
       <input type="date" id="fromDate">
     </div>
 
     <div class="control-group">
-      <label>Range To</label>
+      <label>To</label>
       <input type="date" id="toDate">
     </div>
 
     <button onclick="loadData()">Load</button>
     <button onclick="applyFilters()">Apply</button>
-
   </div>
 
   <!-- STATS -->
@@ -156,12 +189,32 @@
       <tbody id="tbody"></tbody>
     </table>
   </div>
+</div>
 
+<!-- ===== EDIT MODAL ===== -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <h3>Edit Work Type</h3>
+
+    <div class="checkbox-group">
+      <label><input type="checkbox" value="Work From Home"> Work From Home</label>
+      <label><input type="checkbox" value="Office Management"> Office Management</label>
+      <label><input type="checkbox" value="Site Visit"> Site Visit</label>
+      <label><input type="checkbox" value="Leave"> Leave</label>
+      <label><input type="checkbox" value="Government Holiday"> Government Holiday</label>
+    </div>
+
+    <div class="modal-buttons">
+      <button class="reset" onclick="resetModal()">Reset</button>
+      <button onclick="saveEdit()">Save</button>
+    </div>
+  </div>
 </div>
 
 <script>
 
 let allData = [];
+let editId = null;
 
 // LOAD
 async function loadData() {
@@ -182,11 +235,10 @@ function applyFilters() {
   let filtered = [...allData];
 
   if (search) {
-    filtered = filtered.filter(item => {
-      const name = (item.name || "").toLowerCase();
-      const email = (item.email || "").toLowerCase();
-      return name.includes(search) || email.includes(search);
-    });
+    filtered = filtered.filter(i =>
+      (i.name || "").toLowerCase().includes(search) ||
+      (i.email || "").toLowerCase().includes(search)
+    );
   }
 
   if (fromDate && toDate) {
@@ -198,8 +250,33 @@ function applyFilters() {
   render(filtered);
 }
 
+// STATS
+function updateStats(data) {
+  let c = { total: data.length, wfh:0, office:0, site:0, leave:0, govt:0 };
+
+  data.forEach(i => {
+    (i.workTypes || []).forEach(t => {
+      t = t.toLowerCase();
+      if (t.includes("work from home")) c.wfh++;
+      else if (t.includes("office")) c.office++;
+      else if (t.includes("site")) c.site++;
+      else if (t.includes("leave")) c.leave++;
+      else if (t.includes("government")) c.govt++;
+    });
+  });
+
+  document.getElementById("total").innerText = c.total;
+  document.getElementById("wfh").innerText = c.wfh;
+  document.getElementById("office").innerText = c.office;
+  document.getElementById("site").innerText = c.site;
+  document.getElementById("leave").innerText = c.leave;
+  document.getElementById("govt").innerText = c.govt;
+}
+
 // TABLE
 function render(data) {
+  updateStats(data);
+
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
@@ -211,7 +288,7 @@ function render(data) {
       <td>${item.date || ""}</td>
       <td>${(item.workTypes || []).join(", ")}</td>
       <td>
-        <button class="edit" onclick="editEntry('${item._id}')">Edit</button>
+        <button class="edit" onclick="openEdit('${item._id}', ${JSON.stringify(item.workTypes || [])})">Edit</button>
         <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
       </td>
     `;
@@ -222,32 +299,46 @@ function render(data) {
 
 // DELETE
 async function deleteEntry(id) {
-  if (!confirm("Delete this entry?")) return;
+  if (!confirm("Delete?")) return;
 
-  const res = await fetch("/attendance/" + id, {
+  await fetch("/attendance/" + id, {
     method: "DELETE",
     credentials: "include"
   });
 
-  const data = await res.json();
   loadData();
 }
 
-// EDIT
-async function editEntry(id) {
-  const newType = prompt("Enter new work type");
+// ===== MODAL LOGIC =====
+function openEdit(id, currentTypes) {
+  editId = id;
 
-  if (!newType) return;
+  document.querySelectorAll(".checkbox-group input").forEach(cb => {
+    cb.checked = currentTypes.includes(cb.value);
+  });
 
-  await fetch("/attendance/" + id, {
+  document.getElementById("editModal").style.display = "flex";
+}
+
+function resetModal() {
+  document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
+}
+
+async function saveEdit() {
+  const selected = Array.from(document.querySelectorAll(".checkbox-group input:checked"))
+    .map(cb => cb.value);
+
+  await fetch("/attendance/" + editId, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
-    body: JSON.stringify({ workTypes: [newType] })
+    body: JSON.stringify({ workTypes: selected })
   });
 
+  document.getElementById("editModal").style.display = "none";
   loadData();
 }
+
 </script>
 
 </body>
