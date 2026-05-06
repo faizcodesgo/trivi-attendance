@@ -100,13 +100,18 @@
   <h2>📊 Attendance Dashboard</h2>
 
   <div class="controls">
-    <input type="date" id="dateFilter">
-    
     <!-- 🔍 SEARCH -->
-    <input type="text" id="searchInput" placeholder="Search name or email" oninput="applyFilters()">
+    <input type="text" id="searchInput" placeholder="Search name or email">
+
+    <!-- 📅 SINGLE DATE -->
+    <input type="date" id="dateFilter">
+
+    <!-- 📆 RANGE -->
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
 
     <button onclick="loadData()">Load All</button>
-    <button onclick="applyFilters()">Filter</button>
+    <button onclick="applyFilters()">Apply Filters</button>
   </div>
 
   <!-- 🔥 STATS -->
@@ -116,6 +121,7 @@
     <div>Office: <span id="office">0</span></div>
     <div>Site: <span id="site">0</span></div>
     <div>Leave: <span id="leave">0</span></div>
+    <div>Govt: <span id="govt">0</span></div>
   </div>
 
   <div class="card">
@@ -140,16 +146,17 @@
 
 let allData = [];
 
-// 🔥 COUNT CALCULATOR
+// 📊 COUNTS
 function updateCounts(data) {
   let total = data.length;
-  let wfh = 0, office = 0, site = 0, leave = 0;
+  let wfh = 0, office = 0, site = 0, leave = 0, govt = 0;
 
   data.forEach(item => {
     if (item.workTypes.includes("Work From Home")) wfh++;
     if (item.workTypes.includes("Office Management")) office++;
     if (item.workTypes.includes("Site Visit")) site++;
     if (item.workTypes.includes("Leave")) leave++;
+    if (item.workTypes.includes("Government Holiday")) govt++;
   });
 
   document.getElementById("total").innerText = total;
@@ -157,9 +164,10 @@ function updateCounts(data) {
   document.getElementById("office").innerText = office;
   document.getElementById("site").innerText = site;
   document.getElementById("leave").innerText = leave;
+  document.getElementById("govt").innerText = govt;
 }
 
-// 🔥 LOAD DATA
+// 🔥 LOAD
 async function loadData() {
   try {
     const res = await fetch("/attendance", {
@@ -169,30 +177,39 @@ async function loadData() {
     const data = await res.json();
     allData = data;
 
-    applyFilters(); // 🔥 important
+    applyFilters();
 
-  } catch (err) {
+  } catch {
     alert("Error loading data");
   }
 }
 
-// 🔥 COMBINED FILTER (DATE + SEARCH)
+// 🔥 FILTER ENGINE
 function applyFilters() {
-  const selectedDate = document.getElementById("dateFilter").value;
-  const searchValue = document.getElementById("searchInput").value.toLowerCase();
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const singleDate = document.getElementById("dateFilter").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
 
   let filtered = allData;
 
-  // 📅 Date filter
-  if (selectedDate) {
-    filtered = filtered.filter(item => item.date === selectedDate);
+  // 🔍 SEARCH (works alone also)
+  if (search) {
+    filtered = filtered.filter(item =>
+      item.name.toLowerCase().includes(search) ||
+      item.email.toLowerCase().includes(search)
+    );
   }
 
-  // 🔍 Search filter
-  if (searchValue) {
+  // 📅 SINGLE DATE (if used)
+  if (singleDate) {
+    filtered = filtered.filter(item => item.date === singleDate);
+  }
+
+  // 📆 RANGE (overrides single date if both present)
+  if (fromDate && toDate) {
     filtered = filtered.filter(item =>
-      item.name.toLowerCase().includes(searchValue) ||
-      item.email.toLowerCase().includes(searchValue)
+      item.date >= fromDate && item.date <= toDate
     );
   }
 
@@ -200,7 +217,7 @@ function applyFilters() {
   updateCounts(filtered);
 }
 
-// 🔥 TABLE
+// 🧾 TABLE
 function renderTable(data) {
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
