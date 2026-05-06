@@ -3,11 +3,6 @@ alert("JS is connected");
 async function submitAttendance() {
   const msg = document.getElementById("msg");
 
-  if (!name) {
-    msg.innerText = "Please enter your name";
-    return;
-  }
-
   const dateObj = new Date();
   const date = dateObj.toISOString().split("T")[0];
 

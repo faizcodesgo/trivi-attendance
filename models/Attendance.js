@@ -4,8 +4,7 @@ const attendanceSchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      required: true,
-      trim: true,
+      default: "Google User",
     },
     email: {
       type: String,
@@ -43,5 +42,7 @@ const attendanceSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+attendanceSchema.index({ email: 1, date: 1 }, { unique: true });
 
 module.exports = mongoose.model("Attendance", attendanceSchema);

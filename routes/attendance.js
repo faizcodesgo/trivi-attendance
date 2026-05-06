@@ -18,8 +18,8 @@ function ensureAuth(req, res, next) {
 // --------------------
 router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
-    const email = req.user.emails[0].value; // 🔥 UNIQUE USER
-    const name = req.user.displayName;      // optional (auto-fill name)
+    const email = req.user.emails[0].value;
+    const name = req.user.displayName || "Google User";
     const date = req.body.date;
 
     let workTypes = req.body.workTypes;
@@ -39,38 +39,29 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       weekday: "long",
     });
 
-    // 🔥 CHECK using email + date (NOT name)
-    const existing = await Attendance.findOne({ email, date });
+    // 🔥 UPSERT LOGIC (safe + clean)
+    const updated = await Attendance.findOneAndUpdate(
+      { email, date },
+      {
+        name,
+        email,
+        date,
+        day,
+        time: new Date().toLocaleTimeString(),
+        workTypes,
+        imageUrl: null,
+      },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    );
 
-    if (existing) {
-      existing.workTypes = workTypes;
-      existing.time = new Date().toLocaleTimeString();
-
-      const updated = await existing.save();
-
-      return res.json({
-        success: true,
-        message: "Updated",
-        data: updated,
-      });
-    }
-
-    const newEntry = new Attendance({
-      name,
-      email, // 🔥 ADD THIS
-      date,
-      day,
-      time: new Date().toLocaleTimeString(),
-      workTypes,
-      imageUrl: null,
-    });
-
-    const saved = await newEntry.save();
-
-    return res.status(201).json({
+    return res.json({
       success: true,
-      message: "Created",
-      data: saved,
+      message: "Attendance saved",
+      data: updated,
     });
 
   } catch (err) {
@@ -82,9 +73,8 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   }
 });
 
-
 // --------------------
-// GET /attendance (for dashboard)
+// GET /attendance
 // --------------------
 router.get("/", ensureAuth, async (req, res) => {
   const data = await Attendance.find().sort({ date: -1 });
