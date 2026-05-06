@@ -8,17 +8,23 @@ const allowedUsers = require("../config/allowedUsers");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// 🔐 Require login
+// 🔐 Auth check
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.status(401).json({ message: "Not logged in" });
 }
 
-// 🔐 Admin check (for edit/delete)
+// 🔐 FIXED ADMIN CHECK (IMPORTANT)
 function ensureAdmin(req, res, next) {
-  const email = req.user?.emails?.[0]?.value;
+  const email =
+    req.user?.emails?.[0]?.value ||
+    req.user?.email ||
+    req.user?._json?.email;
 
-  if (allowedUsers.includes(email)) {
+  const cleanEmail = (email || "").toLowerCase();
+  const admins = allowedUsers.map(e => e.toLowerCase());
+
+  if (admins.includes(cleanEmail)) {
     return next();
   }
 
@@ -26,14 +32,17 @@ function ensureAdmin(req, res, next) {
 }
 
 // --------------------
-// POST /attendance
+// POST attendance
 // --------------------
 router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
-    const email = req.user.emails[0].value;
+    const email =
+      req.user?.emails?.[0]?.value ||
+      req.user?.email ||
+      req.user?._json?.email;
+
     const name = req.user.displayName || "Google User";
 
-    // 🔥 IST DATE/TIME
     const now = new Date();
 
     const date = now.toLocaleDateString("en-CA", {
@@ -62,7 +71,6 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       workTypes = [workTypes];
     }
 
-    // 🔥 UPSERT (1 per day per user)
     const updated = await Attendance.findOneAndUpdate(
       { email, date },
       {
@@ -77,35 +85,33 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       {
         new: true,
         upsert: true,
-        setDefaultsOnInsert: true,
       }
     );
 
-    return res.json({
+    res.json({
       success: true,
-      message: "Attendance saved",
-      data: updated,
+      data: updated
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
+    res.status(500).json({ message: err.message });
   }
 });
 
 // --------------------
-// GET /attendance
+// GET attendance
 // --------------------
 router.get("/", ensureAuth, async (req, res) => {
-  const data = await Attendance.find().sort({ date: -1 });
-  res.json(data);
+  try {
+    const data = await Attendance.find().sort({ date: -1 });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 // --------------------
-// ✏️ EDIT ATTENDANCE
+// UPDATE
 // --------------------
 router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
@@ -130,11 +136,7 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
       { new: true }
     );
 
-    res.json({
-      success: true,
-      message: "Updated successfully",
-      data: updated
-    });
+    res.json({ success: true, data: updated });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -142,16 +144,13 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
 });
 
 // --------------------
-// 🗑 DELETE ATTENDANCE
+// DELETE
 // --------------------
 router.delete("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
     await Attendance.findByIdAndDelete(req.params.id);
 
-    res.json({
-      success: true,
-      message: "Deleted successfully"
-    });
+    res.json({ success: true });
 
   } catch (err) {
     res.status(500).json({ message: err.message });

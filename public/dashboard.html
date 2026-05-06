@@ -166,7 +166,9 @@ let allData = [];
 // LOAD
 async function loadData() {
   const res = await fetch("/attendance", { credentials: "include" });
-  allData = await res.json();
+  const data = await res.json();
+
+  allData = Array.isArray(data) ? data : [];
   applyFilters();
 }
 
@@ -180,10 +182,11 @@ function applyFilters() {
   let filtered = [...allData];
 
   if (search) {
-    filtered = filtered.filter(item =>
-      item.name.toLowerCase().includes(search) ||
-      item.email.toLowerCase().includes(search)
-    );
+    filtered = filtered.filter(item => {
+      const name = (item.name || "").toLowerCase();
+      const email = (item.email || "").toLowerCase();
+      return name.includes(search) || email.includes(search);
+    });
   }
 
   if (fromDate && toDate) {
@@ -204,9 +207,9 @@ function render(data) {
     const row = document.createElement("tr");
 
     row.innerHTML = `
-      <td>${item.name}</td>
-      <td>${item.date}</td>
-      <td>${item.workTypes.join(", ")}</td>
+      <td>${item.name || ""}</td>
+      <td>${item.date || ""}</td>
+      <td>${(item.workTypes || []).join(", ")}</td>
       <td>
         <button class="edit" onclick="editEntry('${item._id}')">Edit</button>
         <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
@@ -221,17 +224,18 @@ function render(data) {
 async function deleteEntry(id) {
   if (!confirm("Delete this entry?")) return;
 
-  await fetch("/attendance/" + id, {
+  const res = await fetch("/attendance/" + id, {
     method: "DELETE",
     credentials: "include"
   });
 
+  const data = await res.json();
   loadData();
 }
 
 // EDIT
 async function editEntry(id) {
-  const newType = prompt("Enter new work type (exact name)");
+  const newType = prompt("Enter new work type");
 
   if (!newType) return;
 
@@ -244,7 +248,6 @@ async function editEntry(id) {
 
   loadData();
 }
-
 </script>
 
 </body>
