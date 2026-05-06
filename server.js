@@ -14,7 +14,7 @@ const allowedUsers = require("./config/allowedUsers");
 
 const app = express();
 
-// ✅ Required for Render (fixes login/session issues)
+// ✅ Required for Render
 app.set("trust proxy", 1);
 
 // --- DB ---
@@ -35,8 +35,9 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,      // required for HTTPS (Render)
-    sameSite: "none"   // required for cross-site cookies
+    secure: true,
+    sameSite: "none",
+    maxAge: 1000 * 60 * 60 * 24 * 7 // ✅ 7 days
   }
 }));
 
@@ -60,7 +61,10 @@ function ensureAuth(req, res, next) {
 
 // ---------------- GOOGLE AUTH ----------------
 app.get("/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    prompt: "select_account"
+  })
 );
 
 app.get("/auth/google/callback",
@@ -84,12 +88,15 @@ app.get("/unauthorized", (req, res) => {
 
 // ---------------- ROUTES ----------------
 
-// 🔥 LOGIN PAGE FIRST
+// 🔥 LOGIN PAGE
 app.get("/login", (req, res) => {
+  if (req.isAuthenticated()) {
+    return res.redirect("/");
+  }
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// 🔥 HOME (ONLY AFTER LOGIN)
+// 🔥 HOME
 app.get("/", ensureAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
@@ -97,7 +104,7 @@ app.get("/", ensureAuth, (req, res) => {
 // ---------------- ATTENDANCE ----------------
 app.use("/attendance", attendanceRoutes);
 
-// ---------------- DASHBOARD (PROTECTED) ----------------
+// ---------------- DASHBOARD ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
   const email = req.user.emails[0].value;
 
@@ -125,7 +132,7 @@ app.get("/api/attendance", ensureAuth, async (req, res) => {
   }
 });
 
-// ---------------- ADMIN CHECK API ----------------
+// ---------------- ADMIN CHECK ----------------
 app.get("/api/check-admin", ensureAuth, (req, res) => {
   const email = req.user.emails[0].value;
 
