@@ -41,6 +41,23 @@
       border: none;
     }
 
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .stats div {
+      text-align: center;
+      font-weight: bold;
+    }
+
     .card {
       background: white;
       border-radius: 10px;
@@ -87,6 +104,15 @@
     <button onclick="filterByDate()">Filter</button>
   </div>
 
+  <!-- 🔥 STATS -->
+  <div class="stats">
+    <div>Total: <span id="total">0</span></div>
+    <div>WFH: <span id="wfh">0</span></div>
+    <div>Office: <span id="office">0</span></div>
+    <div>Site: <span id="site">0</span></div>
+    <div>Leave: <span id="leave">0</span></div>
+  </div>
+
   <div class="card">
     <table>
       <thead>
@@ -109,6 +135,26 @@
 
 let allData = [];
 
+// 🔥 COUNT CALCULATOR
+function updateCounts(data) {
+  let total = data.length;
+  let wfh = 0, office = 0, site = 0, leave = 0;
+
+  data.forEach(item => {
+    if (item.workTypes.includes("Work From Home")) wfh++;
+    if (item.workTypes.includes("Office Management")) office++;
+    if (item.workTypes.includes("Site Visit")) site++;
+    if (item.workTypes.includes("Leave")) leave++;
+  });
+
+  document.getElementById("total").innerText = total;
+  document.getElementById("wfh").innerText = wfh;
+  document.getElementById("office").innerText = office;
+  document.getElementById("site").innerText = site;
+  document.getElementById("leave").innerText = leave;
+}
+
+// 🔥 LOAD DATA
 async function loadData() {
   try {
     const res = await fetch("/attendance", {
@@ -119,12 +165,14 @@ async function loadData() {
     allData = data;
 
     renderTable(data);
+    updateCounts(data);
 
   } catch (err) {
     alert("Error loading data");
   }
 }
 
+// 🔥 FILTER
 function filterByDate() {
   const selectedDate = document.getElementById("dateFilter").value;
 
@@ -134,9 +182,12 @@ function filterByDate() {
   }
 
   const filtered = allData.filter(item => item.date === selectedDate);
+
   renderTable(filtered);
+  updateCounts(filtered);
 }
 
+// 🔥 TABLE
 function renderTable(data) {
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";

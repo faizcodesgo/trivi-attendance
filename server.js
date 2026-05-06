@@ -126,7 +126,28 @@ app.get("/api/attendance", ensureAuth, async (req, res) => {
   try {
     const Attendance = require("./models/Attendance");
     const data = await Attendance.find().sort({ date: -1 });
-    res.json(data);
+
+// 🔥 COUNT LOGIC
+const counts = {
+  total: data.length,
+  wfh: 0,
+  office: 0,
+  site: 0,
+  leave: 0
+};
+
+data.forEach(item => {
+  if (item.workTypes.includes("Work From Home")) counts.wfh++;
+  if (item.workTypes.includes("Office Management")) counts.office++;
+  if (item.workTypes.includes("Site Visit")) counts.site++;
+  if (item.workTypes.includes("Leave")) counts.leave++;
+});
+
+res.json({
+  data,
+  counts
+});
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
