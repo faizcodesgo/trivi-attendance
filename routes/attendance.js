@@ -20,14 +20,29 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
     const email = req.user.emails[0].value;
     const name = req.user.displayName || "Google User";
-    const date = req.body.date;
+
+    // 🔥 ALWAYS use IST date (ignore frontend date)
+    const now = new Date();
+
+    const date = now.toLocaleDateString("en-CA", {
+      timeZone: "Asia/Kolkata"
+    }); // format: YYYY-MM-DD
+
+    const day = now.toLocaleDateString("en-US", {
+      weekday: "long",
+      timeZone: "Asia/Kolkata"
+    });
+
+    const time = now.toLocaleTimeString("en-IN", {
+      timeZone: "Asia/Kolkata"
+    });
 
     let workTypes = req.body.workTypes;
 
-    if (!date || !workTypes) {
+    if (!workTypes) {
       return res.status(400).json({
         success: false,
-        message: "Missing fields",
+        message: "Select at least one option",
       });
     }
 
@@ -35,11 +50,7 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       workTypes = [workTypes];
     }
 
-    const day = new Date(date).toLocaleDateString("en-US", {
-      weekday: "long",
-    });
-
-    // 🔥 UPSERT LOGIC (safe + clean)
+    // 🔥 UPSERT (1 per day per user)
     const updated = await Attendance.findOneAndUpdate(
       { email, date },
       {
@@ -47,7 +58,7 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
         email,
         date,
         day,
-        time: new Date().toLocaleTimeString(),
+        time,
         workTypes,
         imageUrl: null,
       },

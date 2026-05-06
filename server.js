@@ -83,7 +83,10 @@ app.get("/unauthorized", (req, res) => {
 
 // ---------------- FRONTEND ----------------
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  if (req.isAuthenticated()) {
+    return res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
+  return res.redirect("/auth/google");
 });
 
 // ---------------- ATTENDANCE API ----------------
