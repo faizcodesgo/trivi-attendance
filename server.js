@@ -14,13 +14,13 @@ const allowedUsers = require("./config/allowedUsers");
 
 const app = express();
 
-// ✅ Required for Render
+// ✅ Render fix
 app.set("trust proxy", 1);
 
-// --- DB ---
+// DB
 connectDB();
 
-// --- Middleware ---
+// Middleware
 app.use(cors({
   origin: true,
   credentials: true
@@ -29,7 +29,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Session ---
+// Session
 app.use(session({
   secret: "trivi_secret",
   resave: false,
@@ -44,13 +44,13 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// --- Debug ---
+// Debug
 app.use((req, res, next) => {
   console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
   next();
 });
 
-// 🔐 Auth middleware
+// Auth check
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.redirect("/login");
@@ -83,30 +83,26 @@ app.get("/unauthorized", (req, res) => {
   res.send("Access Denied ❌");
 });
 
-// ---------------- ROUTES ----------------
-
-// ✅ LOGIN (public)
+// ---------------- LOGIN ----------------
 app.get("/login", (req, res) => {
-  if (req.isAuthenticated()) {
-    return res.redirect("/");
-  }
+  if (req.isAuthenticated()) return res.redirect("/dashboard");
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// ✅ STATIC FILES (only after login)
-app.use(express.static(path.join(__dirname, "public")));
+// ---------------- STATIC FILES (SECURE) ----------------
+app.use("/public", express.static(path.join(__dirname, "public")));
 
-// ✅ HOME (protected)
-app.get("/", ensureAuth, (req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+// ---------------- ROOT ROUTE FIX ----------------
+app.get("/", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
+  }
+  return res.redirect("/dashboard");
 });
-
-// ---------------- ATTENDANCE ----------------
-app.use("/attendance", ensureAuth, attendanceRoutes);
 
 // ---------------- DASHBOARD ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
-  const email = req.user.emails[0].value;
+  const email = req.user.emails?.[0]?.value;
 
   if (!allowedUsers.includes(email)) {
     return res.redirect("/");
@@ -115,56 +111,19 @@ app.get("/dashboard", ensureAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
-// ---------------- DASHBOARD API ----------------
-app.get("/api/attendance", ensureAuth, async (req, res) => {
-  const email = req.user.emails[0].value;
+// ---------------- ATTENDANCE ROUTES ----------------
+app.use("/attendance", ensureAuth, attendanceRoutes);
 
-  if (!allowedUsers.includes(email)) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-
-  try {
-    const Attendance = require("./models/Attendance");
-    const data = await Attendance.find().sort({ date: -1 });
-
-// 🔥 COUNT LOGIC
-const counts = {
-  total: data.length,
-  wfh: 0,
-  office: 0,
-  site: 0,
-  leave: 0
-};
-
-data.forEach(item => {
-  if (item.workTypes.includes("Work From Home")) counts.wfh++;
-  if (item.workTypes.includes("Office Management")) counts.office++;
-  if (item.workTypes.includes("Site Visit")) counts.site++;
-  if (item.workTypes.includes("Leave")) counts.leave++;
-});
-
-res.json({
-  data,
-  counts
-});
-
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// ---------------- ADMIN CHECK ----------------
+// ---------------- API ----------------
 app.get("/api/check-admin", ensureAuth, (req, res) => {
-  const email = req.user.emails[0].value;
+  const email = req.user.emails?.[0]?.value;
 
-  if (allowedUsers.includes(email)) {
-    return res.json({ isAdmin: true });
-  }
-
-  return res.json({ isAdmin: false });
+  res.json({
+    isAdmin: allowedUsers.includes(email)
+  });
 });
 
-// ---------------- START ----------------
+// START
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("🚀 Server running");

@@ -6,7 +6,8 @@ async function submitAttendance() {
   const dateObj = new Date();
   const date = dateObj.toISOString().split("T")[0];
 
-  const checkboxes = document.querySelectorAll("input[type=checkbox]:checked");
+  // ✅ ONLY attendance checkboxes (safe selector)
+  const checkboxes = document.querySelectorAll('input[name="workTypes"]:checked');
 
   if (checkboxes.length === 0) {
     msg.innerText = "Select at least one option";
@@ -18,10 +19,10 @@ async function submitAttendance() {
     return;
   }
 
-  let workTypes = [];
-  checkboxes.forEach(cb => workTypes.push(cb.value));
+  const workTypes = Array.from(checkboxes).map(cb => cb.value);
 
-  const image = document.getElementById("image").files[0];
+  const imageInput = document.getElementById("image");
+  const image = imageInput?.files?.[0];
 
   if (workTypes.includes("Site Visit") && !image) {
     msg.innerText = "Please upload image for Site Visit";
@@ -29,11 +30,13 @@ async function submitAttendance() {
   }
 
   const formData = new FormData();
-  formData.append("date", date);
 
+  // ✅ send array properly (multer compatible)
   workTypes.forEach(type => {
     formData.append("workTypes", type);
   });
+
+  formData.append("date", date);
 
   if (image) {
     formData.append("image", image);
@@ -47,16 +50,30 @@ async function submitAttendance() {
     });
 
     const data = await res.json();
-    msg.innerText = data.message;
+
+    msg.innerText = data.message || "Submitted successfully";
+
+    // ✅ reset UI after submit
+    document.querySelectorAll('input[name="workTypes"]').forEach(cb => cb.checked = false);
+
+    if (imageInput) {
+      imageInput.value = "";
+      imageInput.style.display = "none";
+    }
 
   } catch (error) {
+    console.error(error);
     msg.innerText = "Server error. Try again.";
   }
 }
 
-document.querySelectorAll("input[type=checkbox]").forEach(cb => {
+// --------------------
+// CHECKBOX RULES
+// --------------------
+document.querySelectorAll('input[name="workTypes"]').forEach(cb => {
   cb.addEventListener("change", () => {
-    const allChecked = document.querySelectorAll("input[type=checkbox]:checked");
+
+    const allChecked = document.querySelectorAll('input[name="workTypes"]:checked');
 
     if (allChecked.length > 2) {
       cb.checked = false;
@@ -64,14 +81,16 @@ document.querySelectorAll("input[type=checkbox]").forEach(cb => {
       return;
     }
 
-    const siteVisitChecked = document.querySelector('input[value="Site Visit"]').checked;
+    const siteVisitChecked = document.querySelector('input[value="Site Visit"]')?.checked;
     const imageInput = document.getElementById("image");
 
-    if (siteVisitChecked) {
-      imageInput.style.display = "block";
-    } else {
-      imageInput.style.display = "none";
-      imageInput.value = "";
+    if (imageInput) {
+      if (siteVisitChecked) {
+        imageInput.style.display = "block";
+      } else {
+        imageInput.style.display = "none";
+        imageInput.value = "";
+      }
     }
   });
 });
