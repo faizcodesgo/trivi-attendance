@@ -3,6 +3,7 @@ const router = express.Router();
 
 const multer = require("multer");
 const Attendance = require("../models/Attendance");
+const allowedUsers = require("../config/allowedUsers");
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -13,6 +14,17 @@ function ensureAuth(req, res, next) {
   return res.status(401).json({ message: "Not logged in" });
 }
 
+// 🔐 Admin check (for edit/delete)
+function ensureAdmin(req, res, next) {
+  const email = req.user?.emails?.[0]?.value;
+
+  if (allowedUsers.includes(email)) {
+    return next();
+  }
+
+  return res.status(403).json({ message: "Not authorized" });
+}
+
 // --------------------
 // POST /attendance
 // --------------------
@@ -21,12 +33,12 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
     const email = req.user.emails[0].value;
     const name = req.user.displayName || "Google User";
 
-    // 🔥 ALWAYS use IST date (ignore frontend date)
+    // 🔥 IST DATE/TIME
     const now = new Date();
 
     const date = now.toLocaleDateString("en-CA", {
       timeZone: "Asia/Kolkata"
-    }); // format: YYYY-MM-DD
+    });
 
     const day = now.toLocaleDateString("en-US", {
       weekday: "long",
@@ -90,6 +102,60 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
 router.get("/", ensureAuth, async (req, res) => {
   const data = await Attendance.find().sort({ date: -1 });
   res.json(data);
+});
+
+// --------------------
+// ✏️ EDIT ATTENDANCE
+// --------------------
+router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+    let { workTypes } = req.body;
+
+    if (!workTypes) {
+      return res.status(400).json({ message: "workTypes required" });
+    }
+
+    if (typeof workTypes === "string") {
+      workTypes = [workTypes];
+    }
+
+    const updated = await Attendance.findByIdAndUpdate(
+      req.params.id,
+      {
+        workTypes,
+        time: new Date().toLocaleTimeString("en-IN", {
+          timeZone: "Asia/Kolkata"
+        })
+      },
+      { new: true }
+    );
+
+    res.json({
+      success: true,
+      message: "Updated successfully",
+      data: updated
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// --------------------
+// 🗑 DELETE ATTENDANCE
+// --------------------
+router.delete("/:id", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+    await Attendance.findByIdAndDelete(req.params.id);
+
+    res.json({
+      success: true,
+      message: "Deleted successfully"
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 });
 
 module.exports = router;
