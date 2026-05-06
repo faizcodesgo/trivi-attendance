@@ -1,8 +1,5 @@
 const path = require("path");
 require("dotenv").config();
-console.log("TEST:", process.env.TEST_VAR);
-
-console.log("CLIENT_ID:", process.env.GOOGLECLIENT_ID);
 
 const express = require("express");
 const cors = require("cors");
@@ -16,6 +13,9 @@ const attendanceRoutes = require("./routes/attendance");
 
 const app = express();
 
+// ✅ IMPORTANT FOR RENDER (fixes login issue)
+app.set("trust proxy", 1);
+
 // --- DB ---
 connectDB();
 
@@ -28,11 +28,15 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// --- Session ---
+// --- Session (FIXED) ---
 app.use(session({
   secret: "trivi_secret",
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: true,      // 🔥 REQUIRED for Render (https)
+    sameSite: "none"   // 🔥 REQUIRED for cross-site cookies
+  }
 }));
 
 app.use(passport.initialize());
@@ -40,7 +44,7 @@ app.use(passport.session());
 
 // --- Debug ---
 app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url);
+  console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
   next();
 });
 
@@ -50,7 +54,7 @@ app.use(express.static(path.join(__dirname, "public")));
 // ---------------- AUTH ----------------
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
-  res.redirect("/auth/google");
+  return res.status(401).json({ message: "Not logged in" });
 }
 
 // ---------------- GOOGLE LOGIN ----------------
@@ -66,6 +70,12 @@ app.get("/auth/google/callback",
     res.redirect("/");
   }
 );
+
+app.get("/auth/logout", (req, res) => {
+  req.logout(() => {
+    res.redirect("/");
+  });
+});
 
 app.get("/unauthorized", (req, res) => {
   res.send("Access Denied ❌");
@@ -98,5 +108,5 @@ app.get("/api/attendance", ensureAuth, async (req, res) => {
 // ---------------- START ----------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running`);
 });
