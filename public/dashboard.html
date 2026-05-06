@@ -288,7 +288,7 @@ function render(data) {
       <td>${item.date || ""}</td>
       <td>${(item.workTypes || []).join(", ")}</td>
       <td>
-        <button class="edit" onclick="openEdit('${item._id}', ${JSON.stringify(item.workTypes || [])})">Edit</button>
+        <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
         <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
       </td>
     `;
@@ -309,21 +309,26 @@ async function deleteEntry(id) {
   loadData();
 }
 
-// ===== MODAL LOGIC =====
-function openEdit(id, currentTypes) {
+// OPEN EDIT
+function openEdit(id) {
   editId = id;
 
+  const item = allData.find(x => x._id === id);
+  const current = item?.workTypes || [];
+
   document.querySelectorAll(".checkbox-group input").forEach(cb => {
-    cb.checked = currentTypes.includes(cb.value);
+    cb.checked = current.includes(cb.value);
   });
 
   document.getElementById("editModal").style.display = "flex";
 }
 
+// RESET
 function resetModal() {
   document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
 }
 
+// SAVE EDIT
 async function saveEdit() {
   const selected = Array.from(document.querySelectorAll(".checkbox-group input:checked"))
     .map(cb => cb.value);
@@ -338,6 +343,13 @@ async function saveEdit() {
   document.getElementById("editModal").style.display = "none";
   loadData();
 }
+
+// CLOSE MODAL ON OUTSIDE CLICK
+document.getElementById("editModal").addEventListener("click", (e) => {
+  if (e.target.id === "editModal") {
+    document.getElementById("editModal").style.display = "none";
+  }
+});
 
 </script>
 

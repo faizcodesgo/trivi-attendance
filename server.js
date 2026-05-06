@@ -50,12 +50,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Auth check
-function ensureAuth(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  return res.redirect("/login");
-}
-
 // ---------------- GOOGLE AUTH ----------------
 app.get("/auth/google",
   passport.authenticate("google", {
@@ -85,24 +79,44 @@ app.get("/unauthorized", (req, res) => {
 
 // ---------------- LOGIN ----------------
 app.get("/login", (req, res) => {
-  if (req.isAuthenticated()) return res.redirect("/dashboard");
+  if (req.isAuthenticated()) {
+    const email = req.user?.emails?.[0]?.value;
+
+    if (allowedUsers.includes(email)) {
+      return res.redirect("/dashboard");
+    }
+
+    return res.redirect("/");
+  }
+
   res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
-// ---------------- STATIC FILES (SECURE) ----------------
-app.use("/public", express.static(path.join(__dirname, "public")));
+// ---------------- STATIC FILES ----------------
+app.use(express.static(path.join(__dirname, "public")));
 
-// ---------------- ROOT ROUTE FIX ----------------
+// ---------------- ROOT ROUTE ----------------
 app.get("/", (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect("/login");
   }
-  return res.redirect("/dashboard");
+
+  const email = req.user?.emails?.[0]?.value;
+
+  if (allowedUsers.includes(email)) {
+    return res.redirect("/dashboard");
+  }
+
+  return res.redirect("/login");
 });
 
 // ---------------- DASHBOARD ----------------
-app.get("/dashboard", ensureAuth, (req, res) => {
-  const email = req.user.emails?.[0]?.value;
+app.get("/dashboard", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect("/login");
+  }
+
+  const email = req.user?.emails?.[0]?.value;
 
   if (!allowedUsers.includes(email)) {
     return res.redirect("/");
@@ -111,19 +125,26 @@ app.get("/dashboard", ensureAuth, (req, res) => {
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
 });
 
-// ---------------- ATTENDANCE ROUTES ----------------
-app.use("/attendance", ensureAuth, attendanceRoutes);
+// ---------------- ATTENDANCE ----------------
+app.use("/attendance", (req, res, next) => {
+  if (req.isAuthenticated()) return next();
+  return res.status(401).json({ message: "Not logged in" });
+}, attendanceRoutes);
 
-// ---------------- API ----------------
-app.get("/api/check-admin", ensureAuth, (req, res) => {
-  const email = req.user.emails?.[0]?.value;
+// ---------------- ADMIN CHECK ----------------
+app.get("/api/check-admin", (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.json({ isAdmin: false });
+  }
+
+  const email = req.user?.emails?.[0]?.value;
 
   res.json({
     isAdmin: allowedUsers.includes(email)
   });
 });
 
-// START
+// ---------------- START ----------------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log("🚀 Server running");
