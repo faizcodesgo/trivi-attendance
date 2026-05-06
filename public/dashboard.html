@@ -26,6 +26,7 @@
       justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
+      flex-wrap: wrap;
     }
 
     input, button {
@@ -100,8 +101,12 @@
 
   <div class="controls">
     <input type="date" id="dateFilter">
+    
+    <!-- 🔍 SEARCH -->
+    <input type="text" id="searchInput" placeholder="Search name or email" oninput="applyFilters()">
+
     <button onclick="loadData()">Load All</button>
-    <button onclick="filterByDate()">Filter</button>
+    <button onclick="applyFilters()">Filter</button>
   </div>
 
   <!-- 🔥 STATS -->
@@ -164,24 +169,32 @@ async function loadData() {
     const data = await res.json();
     allData = data;
 
-    renderTable(data);
-    updateCounts(data);
+    applyFilters(); // 🔥 important
 
   } catch (err) {
     alert("Error loading data");
   }
 }
 
-// 🔥 FILTER
-function filterByDate() {
+// 🔥 COMBINED FILTER (DATE + SEARCH)
+function applyFilters() {
   const selectedDate = document.getElementById("dateFilter").value;
+  const searchValue = document.getElementById("searchInput").value.toLowerCase();
 
-  if (!selectedDate) {
-    alert("Select a date first");
-    return;
+  let filtered = allData;
+
+  // 📅 Date filter
+  if (selectedDate) {
+    filtered = filtered.filter(item => item.date === selectedDate);
   }
 
-  const filtered = allData.filter(item => item.date === selectedDate);
+  // 🔍 Search filter
+  if (searchValue) {
+    filtered = filtered.filter(item =>
+      item.name.toLowerCase().includes(searchValue) ||
+      item.email.toLowerCase().includes(searchValue)
+    );
+  }
 
   renderTable(filtered);
   updateCounts(filtered);
