@@ -12,7 +12,7 @@
     }
 
     .container {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: auto;
     }
 
@@ -23,14 +23,24 @@
 
     .controls {
       display: flex;
+      flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #ccc;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      font-size: 12px;
     }
 
     input, button {
-      padding: 10px;
+      padding: 8px;
       border-radius: 6px;
       border: 1px solid #ccc;
     }
@@ -40,6 +50,14 @@
       color: white;
       cursor: pointer;
       border: none;
+    }
+
+    .danger {
+      background: red;
+    }
+
+    .edit {
+      background: #007bff;
     }
 
     .stats {
@@ -52,11 +70,6 @@
       margin-bottom: 20px;
       flex-wrap: wrap;
       gap: 10px;
-    }
-
-    .stats div {
-      text-align: center;
-      font-weight: bold;
     }
 
     .card {
@@ -73,7 +86,7 @@
     }
 
     th, td {
-      padding: 12px;
+      padding: 10px;
       text-align: center;
       border-bottom: 1px solid #eee;
     }
@@ -81,14 +94,6 @@
     th {
       background: black;
       color: white;
-    }
-
-    tr:hover {
-      background: #f9f9f9;
-    }
-
-    img {
-      border-radius: 6px;
     }
   </style>
 </head>
@@ -99,18 +104,35 @@
 
   <h2>📊 Attendance Dashboard</h2>
 
+  <!-- CONTROLS -->
   <div class="controls">
-    <input type="text" id="searchInput" placeholder="Search name or email">
 
-    <input type="date" id="dateFilter">
+    <div class="control-group">
+      <label>Search (Name / Email)</label>
+      <input type="text" id="searchInput">
+    </div>
 
-    <input type="date" id="fromDate">
-    <input type="date" id="toDate">
+    <div class="control-group">
+      <label>Single Date</label>
+      <input type="date" id="singleDate">
+    </div>
 
-    <button onclick="loadData()">Load All</button>
-    <button onclick="applyFilters()">Apply Filters</button>
+    <div class="control-group">
+      <label>Range From</label>
+      <input type="date" id="fromDate">
+    </div>
+
+    <div class="control-group">
+      <label>Range To</label>
+      <input type="date" id="toDate">
+    </div>
+
+    <button onclick="loadData()">Load</button>
+    <button onclick="applyFilters()">Apply</button>
+
   </div>
 
+  <!-- STATS -->
   <div class="stats">
     <div>Total: <span id="total">0</span></div>
     <div>WFH: <span id="wfh">0</span></div>
@@ -120,16 +142,15 @@
     <div>Govt: <span id="govt">0</span></div>
   </div>
 
+  <!-- TABLE -->
   <div class="card">
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Date</th>
-          <th>Day</th>
-          <th>Time</th>
           <th>Work Type</th>
-          <th>Image</th>
+          <th>Actions</th>
         </tr>
       </thead>
       <tbody id="tbody"></tbody>
@@ -142,78 +163,40 @@
 
 let allData = [];
 
-// 📊 COUNTS
-function updateCounts(data) {
-  let total = data.length;
-  let wfh = 0, office = 0, site = 0, leave = 0, govt = 0;
-
-  data.forEach(item => {
-    if (item.workTypes.includes("Work From Home")) wfh++;
-    if (item.workTypes.includes("Office Management")) office++;
-    if (item.workTypes.includes("Site Visit")) site++;
-    if (item.workTypes.includes("Leave")) leave++;
-    if (item.workTypes.includes("Government Holiday")) govt++;
-  });
-
-  document.getElementById("total").innerText = total;
-  document.getElementById("wfh").innerText = wfh;
-  document.getElementById("office").innerText = office;
-  document.getElementById("site").innerText = site;
-  document.getElementById("leave").innerText = leave;
-  document.getElementById("govt").innerText = govt;
-}
-
-// 🔥 LOAD
+// LOAD
 async function loadData() {
-  try {
-    const res = await fetch("/attendance", {
-      credentials: "include"
-    });
-
-    const data = await res.json();
-    allData = data;
-
-    applyFilters();
-
-  } catch {
-    alert("Error loading data");
-  }
+  const res = await fetch("/attendance", { credentials: "include" });
+  allData = await res.json();
+  applyFilters();
 }
 
-// 🔥 FIXED FILTER ENGINE
+// FILTER
 function applyFilters() {
-  const search = document.getElementById("searchInput").value.toLowerCase().trim();
-  const singleDate = document.getElementById("dateFilter").value;
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const singleDate = document.getElementById("singleDate").value;
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
 
   let filtered = [...allData];
 
-  // 🔍 SEARCH (independent)
   if (search) {
     filtered = filtered.filter(item =>
-      (item.name && item.name.toLowerCase().includes(search)) ||
-      (item.email && item.email.toLowerCase().includes(search))
+      item.name.toLowerCase().includes(search) ||
+      item.email.toLowerCase().includes(search)
     );
   }
 
-  // 📆 RANGE (priority)
   if (fromDate && toDate) {
-    filtered = filtered.filter(item =>
-      item.date >= fromDate && item.date <= toDate
-    );
-  }
-  // 📅 SINGLE DATE (only if range not used)
-  else if (singleDate) {
-    filtered = filtered.filter(item => item.date === singleDate);
+    filtered = filtered.filter(i => i.date >= fromDate && i.date <= toDate);
+  } else if (singleDate) {
+    filtered = filtered.filter(i => i.date === singleDate);
   }
 
-  renderTable(filtered);
-  updateCounts(filtered);
+  render(filtered);
 }
 
-// 🧾 TABLE
-function renderTable(data) {
+// TABLE
+function render(data) {
   const tbody = document.getElementById("tbody");
   tbody.innerHTML = "";
 
@@ -223,18 +206,43 @@ function renderTable(data) {
     row.innerHTML = `
       <td>${item.name}</td>
       <td>${item.date}</td>
-      <td>${item.day}</td>
-      <td>${item.time}</td>
       <td>${item.workTypes.join(", ")}</td>
       <td>
-        ${item.imageUrl 
-          ? `<img src="${item.imageUrl}" width="70">` 
-          : "No image"}
+        <button class="edit" onclick="editEntry('${item._id}')">Edit</button>
+        <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
       </td>
     `;
 
     tbody.appendChild(row);
   });
+}
+
+// DELETE
+async function deleteEntry(id) {
+  if (!confirm("Delete this entry?")) return;
+
+  await fetch("/attendance/" + id, {
+    method: "DELETE",
+    credentials: "include"
+  });
+
+  loadData();
+}
+
+// EDIT
+async function editEntry(id) {
+  const newType = prompt("Enter new work type (exact name)");
+
+  if (!newType) return;
+
+  await fetch("/attendance/" + id, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ workTypes: [newType] })
+  });
+
+  loadData();
 }
 
 </script>
