@@ -1,5 +1,3 @@
-const MAX = 2;
-
 async function submitAttendance() {
   const msg = document.getElementById("msg");
 
@@ -10,8 +8,8 @@ async function submitAttendance() {
     return;
   }
 
-  if (checked.length > MAX) {
-    msg.innerText = "Only 2 allowed";
+  if (checked.length > 2) {
+    msg.innerText = "Only 2 selections allowed";
     return;
   }
 
@@ -28,29 +26,29 @@ async function submitAttendance() {
     });
 
     const data = await res.json();
-    msg.innerText = data.message;
 
-    resetForm();
+    if (!res.ok) {
+      msg.innerText = data.message || "Failed to submit";
+      return;
+    }
 
-  } catch (e) {
-    msg.innerText = "Error";
+    msg.innerText = "Attendance submitted successfully";
+
+    document.querySelectorAll('input[name="workTypes"]').forEach(cb => cb.checked = false);
+
+  } catch (err) {
+    msg.innerText = "Server error";
   }
 }
 
-// strict limit
+// STRICT LIMIT (FIXED)
 document.querySelectorAll('input[name="workTypes"]').forEach(cb => {
   cb.addEventListener("change", () => {
     const checked = document.querySelectorAll('input[name="workTypes"]:checked');
 
-    if (checked.length > MAX) {
+    if (checked.length > 2) {
       cb.checked = false;
-      alert("Only 2 allowed");
+      alert("Only 2 selections allowed");
     }
   });
 });
-
-function resetForm() {
-  document.querySelectorAll('input[name="workTypes"]').forEach(cb => cb.checked = false);
-  const msg = document.getElementById("msg");
-  if (msg) msg.innerText = "";
-}
