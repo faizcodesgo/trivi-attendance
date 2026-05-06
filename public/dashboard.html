@@ -163,6 +163,7 @@
 
     <button onclick="loadData()">Load</button>
     <button onclick="applyFilters()">Apply</button>
+    <button onclick="resetFilters()">Reset</button>
   </div>
 
   <!-- STATS -->
@@ -248,6 +249,15 @@ function applyFilters() {
   }
 
   render(filtered);
+}
+
+function resetFilters() {
+  document.getElementById("searchInput").value = "";
+  document.getElementById("singleDate").value = "";
+  document.getElementById("fromDate").value = "";
+  document.getElementById("toDate").value = "";
+
+  applyFilters();
 }
 
 // STATS

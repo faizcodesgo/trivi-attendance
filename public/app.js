@@ -1,12 +1,8 @@
-alert("JS is connected");
+alert("JS connected");
 
 async function submitAttendance() {
   const msg = document.getElementById("msg");
 
-  const dateObj = new Date();
-  const date = dateObj.toISOString().split("T")[0];
-
-  // ✅ ONLY attendance checkboxes (safe selector)
   const checkboxes = document.querySelectorAll('input[name="workTypes"]:checked');
 
   if (checkboxes.length === 0) {
@@ -15,7 +11,7 @@ async function submitAttendance() {
   }
 
   if (checkboxes.length > 2) {
-    msg.innerText = "You can select only up to 2 options";
+    msg.innerText = "You can select only 2 options";
     return;
   }
 
@@ -24,23 +20,11 @@ async function submitAttendance() {
   const imageInput = document.getElementById("image");
   const image = imageInput?.files?.[0];
 
-  if (workTypes.includes("Site Visit") && !image) {
-    msg.innerText = "Please upload image for Site Visit";
-    return;
-  }
-
   const formData = new FormData();
 
-  // ✅ send array properly (multer compatible)
-  workTypes.forEach(type => {
-    formData.append("workTypes", type);
-  });
+  workTypes.forEach(t => formData.append("workTypes", t));
 
-  formData.append("date", date);
-
-  if (image) {
-    formData.append("image", image);
-  }
+  if (image) formData.append("image", image);
 
   try {
     const res = await fetch("/attendance", {
@@ -50,47 +34,25 @@ async function submitAttendance() {
     });
 
     const data = await res.json();
+    msg.innerText = data.message || "Submitted";
 
-    msg.innerText = data.message || "Submitted successfully";
-
-    // ✅ reset UI after submit
     document.querySelectorAll('input[name="workTypes"]').forEach(cb => cb.checked = false);
 
-    if (imageInput) {
-      imageInput.value = "";
-      imageInput.style.display = "none";
-    }
+    if (imageInput) imageInput.value = "";
 
-  } catch (error) {
-    console.error(error);
-    msg.innerText = "Server error. Try again.";
+  } catch (err) {
+    msg.innerText = "Server error";
   }
 }
 
-// --------------------
-// CHECKBOX RULES
-// --------------------
+// limit selection live
 document.querySelectorAll('input[name="workTypes"]').forEach(cb => {
   cb.addEventListener("change", () => {
+    const checked = document.querySelectorAll('input[name="workTypes"]:checked');
 
-    const allChecked = document.querySelectorAll('input[name="workTypes"]:checked');
-
-    if (allChecked.length > 2) {
+    if (checked.length > 2) {
       cb.checked = false;
       alert("Only 2 selections allowed");
-      return;
-    }
-
-    const siteVisitChecked = document.querySelector('input[value="Site Visit"]')?.checked;
-    const imageInput = document.getElementById("image");
-
-    if (imageInput) {
-      if (siteVisitChecked) {
-        imageInput.style.display = "block";
-      } else {
-        imageInput.style.display = "none";
-        imageInput.value = "";
-      }
     }
   });
 });

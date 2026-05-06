@@ -8,39 +8,28 @@ const allowedUsers = require("../config/allowedUsers");
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// 🔐 Auth check
+// AUTH
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.status(401).json({ message: "Not logged in" });
 }
 
-// 🔐 FIXED ADMIN CHECK (IMPORTANT)
+// ADMIN
 function ensureAdmin(req, res, next) {
   const email =
     req.user?.emails?.[0]?.value ||
     req.user?.email ||
     req.user?._json?.email;
 
-  const cleanEmail = (email || "").toLowerCase();
-  const admins = allowedUsers.map(e => e.toLowerCase());
-
-  if (admins.includes(cleanEmail)) {
-    return next();
-  }
+  if (allowedUsers.includes(email)) return next();
 
   return res.status(403).json({ message: "Not authorized" });
 }
 
-// --------------------
-// POST attendance
-// --------------------
+// ---------------- POST ----------------
 router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
   try {
-    const email =
-      req.user?.emails?.[0]?.value ||
-      req.user?.email ||
-      req.user?._json?.email;
-
+    const email = req.user?.emails?.[0]?.value;
     const name = req.user.displayName || "Google User";
 
     const now = new Date();
@@ -67,7 +56,7 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       });
     }
 
-    if (typeof workTypes === "string") {
+    if (!Array.isArray(workTypes)) {
       workTypes = [workTypes];
     }
 
@@ -82,37 +71,23 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
         workTypes,
         imageUrl: null,
       },
-      {
-        new: true,
-        upsert: true,
-      }
+      { new: true, upsert: true }
     );
 
-    res.json({
-      success: true,
-      data: updated
-    });
+    res.json({ success: true, data: updated });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
 
-// --------------------
-// GET attendance
-// --------------------
+// ---------------- GET ----------------
 router.get("/", ensureAuth, async (req, res) => {
-  try {
-    const data = await Attendance.find().sort({ date: -1 });
-    res.json(data);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
+  const data = await Attendance.find().sort({ date: -1 });
+  res.json(data);
 });
 
-// --------------------
-// UPDATE
-// --------------------
+// ---------------- PUT ----------------
 router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
     let { workTypes } = req.body;
@@ -121,7 +96,7 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
       return res.status(400).json({ message: "workTypes required" });
     }
 
-    if (typeof workTypes === "string") {
+    if (!Array.isArray(workTypes)) {
       workTypes = [workTypes];
     }
 
@@ -143,15 +118,11 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   }
 });
 
-// --------------------
-// DELETE
-// --------------------
+// ---------------- DELETE ----------------
 router.delete("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
     await Attendance.findByIdAndDelete(req.params.id);
-
     res.json({ success: true });
-
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
