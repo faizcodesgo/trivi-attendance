@@ -16,44 +16,36 @@ const app = express();
 
 app.set("trust proxy", 1);
 
-// DB
 connectDB();
 
-// Middleware
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
-
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Session
 app.use(session({
   secret: "trivi_secret",
   resave: false,
   saveUninitialized: false,
   cookie: {
     secure: true,
-    sameSite: "none",
-    maxAge: 1000 * 60 * 60 * 24 * 7
+    sameSite: "none"
   }
 }));
 
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Debug
-app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
-  next();
-});
-
-// AUTH CHECK
+// ---------------- AUTH ----------------
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.redirect("/login");
 }
+
+// ---------------- LOGIN ----------------
+app.get("/login", (req, res) => {
+  if (req.isAuthenticated()) return res.redirect("/");
+  res.sendFile(path.join(__dirname, "public", "login.html"));
+});
 
 // ---------------- GOOGLE AUTH ----------------
 app.get("/auth/google",
@@ -73,21 +65,10 @@ app.get("/auth/google/callback",
 );
 
 app.get("/auth/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect("/login");
-  });
+  req.logout(() => res.redirect("/login"));
 });
 
-// ---------------- LOGIN ----------------
-app.get("/login", (req, res) => {
-  if (req.isAuthenticated()) return res.redirect("/");
-  res.sendFile(path.join(__dirname, "public", "login.html"));
-});
-
-// 🔥 STATIC FILES (AFTER LOGIN ROUTES)
-app.use(express.static(path.join(__dirname, "public")));
-
-// ---------------- ROOT FIX ----------------
+// ---------------- ROOT FIX (STRICT LOGIN FIRST) ----------------
 app.get("/", (req, res) => {
   if (!req.isAuthenticated()) {
     return res.redirect("/login");
@@ -95,12 +76,15 @@ app.get("/", (req, res) => {
 
   const email = req.user?.emails?.[0]?.value;
 
-  if (allowedUsers.includes(email)) {
-    return res.redirect("/dashboard");
+  if (!allowedUsers.includes(email)) {
+    return res.redirect("/login");
   }
 
-  return res.redirect("/login");
+  return res.redirect("/dashboard");
 });
+
+// ---------------- STATIC (AFTER AUTH LOGIC ONLY) ----------------
+app.use(express.static(path.join(__dirname, "public")));
 
 // ---------------- DASHBOARD ----------------
 app.get("/dashboard", ensureAuth, (req, res) => {
@@ -116,17 +100,12 @@ app.get("/dashboard", ensureAuth, (req, res) => {
 // ---------------- ATTENDANCE ----------------
 app.use("/attendance", ensureAuth, attendanceRoutes);
 
-// ---------------- ADMIN CHECK ----------------
+// ---------------- ADMIN ----------------
 app.get("/api/check-admin", ensureAuth, (req, res) => {
   const email = req.user?.emails?.[0]?.value;
 
-  res.json({
-    isAdmin: allowedUsers.includes(email)
-  });
+  res.json({ isAdmin: allowedUsers.includes(email) });
 });
 
-// START
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log("🚀 Server running");
-});
+app.listen(PORT, () => console.log("🚀 Server running"));

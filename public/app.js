@@ -1,30 +1,22 @@
-alert("JS connected");
-
 async function submitAttendance() {
   const msg = document.getElementById("msg");
 
-  const checkboxes = document.querySelectorAll('input[name="workTypes"]:checked');
+  const checked = document.querySelectorAll('input[name="workTypes"]:checked');
 
-  if (checkboxes.length === 0) {
+  if (checked.length === 0) {
     msg.innerText = "Select at least one option";
     return;
   }
 
-  if (checkboxes.length > 2) {
-    msg.innerText = "You can select only 2 options";
+  if (checked.length > 2) {
+    msg.innerText = "Only 2 allowed";
     return;
   }
 
-  const workTypes = Array.from(checkboxes).map(cb => cb.value);
-
-  const imageInput = document.getElementById("image");
-  const image = imageInput?.files?.[0];
+  const workTypes = Array.from(checked).map(cb => cb.value);
 
   const formData = new FormData();
-
-  workTypes.forEach(t => formData.append("workTypes", t));
-
-  if (image) formData.append("image", image);
+  workTypes.forEach(w => formData.append("workTypes", w));
 
   try {
     const res = await fetch("/attendance", {
@@ -34,25 +26,23 @@ async function submitAttendance() {
     });
 
     const data = await res.json();
-    msg.innerText = data.message || "Submitted";
+    msg.innerText = data.message || "Success";
 
     document.querySelectorAll('input[name="workTypes"]').forEach(cb => cb.checked = false);
 
-    if (imageInput) imageInput.value = "";
-
   } catch (err) {
-    msg.innerText = "Server error";
+    msg.innerText = "Error";
   }
 }
 
-// limit selection live
+// 🔥 STRICT LIMIT LIVE CHECK
 document.querySelectorAll('input[name="workTypes"]').forEach(cb => {
   cb.addEventListener("change", () => {
     const checked = document.querySelectorAll('input[name="workTypes"]:checked');
 
     if (checked.length > 2) {
       cb.checked = false;
-      alert("Only 2 selections allowed");
+      alert("Only 2 allowed");
     }
   });
 });
