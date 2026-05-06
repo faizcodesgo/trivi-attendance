@@ -42,6 +42,27 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
 
     let workTypes = req.body.workTypes;
 
+// handle missing
+if (!workTypes) {
+  return res.status(400).json({
+    success: false,
+    message: "Select at least one option"
+  });
+}
+
+// force array
+if (!Array.isArray(workTypes)) {
+  workTypes = [workTypes];
+}
+
+// strict limit
+if (workTypes.length > 2) {
+  return res.status(400).json({
+    success: false,
+    message: "Only 2 selections allowed"
+  });
+}
+
     if (!workTypes) {
       return res.status(400).json({ message: "Select at least one option" });
     }

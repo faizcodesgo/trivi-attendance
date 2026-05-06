@@ -183,6 +183,8 @@
         <tr>
           <th>Name</th>
           <th>Date</th>
+          <th>Day</th>
+          <th>Time</th>
           <th>Work Type</th>
           <th>Actions</th>
         </tr>
@@ -296,6 +298,8 @@ function render(data) {
     row.innerHTML = `
       <td>${item.name || ""}</td>
       <td>${item.date || ""}</td>
+      <td>${item.day || ""}</td>
+      <td>${item.time || ""}</td>
       <td>${(item.workTypes || []).join(", ")}</td>
       <td>
         <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
@@ -342,6 +346,16 @@ function resetModal() {
 async function saveEdit() {
   const selected = Array.from(document.querySelectorAll(".checkbox-group input:checked"))
     .map(cb => cb.value);
+
+    if (selected.length === 0) {
+      alert("Select at least one option");
+      return;
+    }
+
+    if (selected.length > 2) {
+      alert("only 2 options allowed");
+      return;
+    }
 
   await fetch("/attendance/" + editId, {
     method: "PUT",
