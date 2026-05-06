@@ -100,13 +100,10 @@
   <h2>📊 Attendance Dashboard</h2>
 
   <div class="controls">
-    <!-- 🔍 SEARCH -->
     <input type="text" id="searchInput" placeholder="Search name or email">
 
-    <!-- 📅 SINGLE DATE -->
     <input type="date" id="dateFilter">
 
-    <!-- 📆 RANGE -->
     <input type="date" id="fromDate">
     <input type="date" id="toDate">
 
@@ -114,7 +111,6 @@
     <button onclick="applyFilters()">Apply Filters</button>
   </div>
 
-  <!-- 🔥 STATS -->
   <div class="stats">
     <div>Total: <span id="total">0</span></div>
     <div>WFH: <span id="wfh">0</span></div>
@@ -184,33 +180,32 @@ async function loadData() {
   }
 }
 
-// 🔥 FILTER ENGINE
+// 🔥 FIXED FILTER ENGINE
 function applyFilters() {
-  const search = document.getElementById("searchInput").value.toLowerCase();
+  const search = document.getElementById("searchInput").value.toLowerCase().trim();
   const singleDate = document.getElementById("dateFilter").value;
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
 
-  let filtered = allData;
+  let filtered = [...allData];
 
-  // 🔍 SEARCH (works alone also)
+  // 🔍 SEARCH (independent)
   if (search) {
     filtered = filtered.filter(item =>
-      item.name.toLowerCase().includes(search) ||
-      item.email.toLowerCase().includes(search)
+      (item.name && item.name.toLowerCase().includes(search)) ||
+      (item.email && item.email.toLowerCase().includes(search))
     );
   }
 
-  // 📅 SINGLE DATE (if used)
-  if (singleDate) {
-    filtered = filtered.filter(item => item.date === singleDate);
-  }
-
-  // 📆 RANGE (overrides single date if both present)
+  // 📆 RANGE (priority)
   if (fromDate && toDate) {
     filtered = filtered.filter(item =>
       item.date >= fromDate && item.date <= toDate
     );
+  }
+  // 📅 SINGLE DATE (only if range not used)
+  else if (singleDate) {
+    filtered = filtered.filter(item => item.date === singleDate);
   }
 
   renderTable(filtered);
