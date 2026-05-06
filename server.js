@@ -14,6 +14,7 @@ const allowedUsers = require("./config/allowedUsers");
 
 const app = express();
 
+// ✅ Required for Render (fixes login/session issues)
 app.set("trust proxy", 1);
 
 // --- DB ---
@@ -34,8 +35,8 @@ app.use(session({
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: true,
-    sameSite: "none"
+    secure: true,      // required for HTTPS (Render)
+    sameSite: "none"   // required for cross-site cookies
   }
 }));
 
@@ -51,13 +52,13 @@ app.use((req, res, next) => {
 // --- Static ---
 app.use(express.static(path.join(__dirname, "public")));
 
-// 🔐 Auth check
+// 🔐 Auth middleware
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
   return res.redirect("/login");
 }
 
-// ---------------- AUTH ----------------
+// ---------------- GOOGLE AUTH ----------------
 app.get("/auth/google",
   passport.authenticate("google", { scope: ["profile", "email"] })
 );
@@ -101,7 +102,7 @@ app.get("/dashboard", ensureAuth, (req, res) => {
   const email = req.user.emails[0].value;
 
   if (!allowedUsers.includes(email)) {
-    return res.send("Access Denied ❌");
+    return res.redirect("/");
   }
 
   res.sendFile(path.join(__dirname, "public", "dashboard.html"));
@@ -122,6 +123,17 @@ app.get("/api/attendance", ensureAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
+});
+
+// ---------------- ADMIN CHECK API ----------------
+app.get("/api/check-admin", ensureAuth, (req, res) => {
+  const email = req.user.emails[0].value;
+
+  if (allowedUsers.includes(email)) {
+    return res.json({ isAdmin: true });
+  }
+
+  return res.json({ isAdmin: false });
 });
 
 // ---------------- START ----------------

@@ -14,11 +14,10 @@
       <h2>TriVi Infracons</h2>
       <p>Employee Attendance System</p>
 
-      <!-- ONLY LOGOUT -->
-      <a href="/auth/logout">
-        <button>Logout</button>
-      </a>
-
+      <!-- 🔥 Admin-only button -->
+      <button id="dashboardBtn" style="display:none;" onclick="goDashboard()">
+        Dashboard
+      </button>
     </div>
 
     <div class="card">
@@ -35,6 +34,11 @@
 
       <button onclick="submitAttendance()">Submit Attendance</button>
 
+      <!-- 🔥 LOGOUT AT END -->
+      <a href="/auth/logout">
+        <button>Logout</button>
+      </a>
+
       <p id="msg"></p>
 
     </div>
@@ -42,5 +46,29 @@
   </div>
 
   <script src="app.js"></script>
+
+  <!-- 🔥 Admin check script -->
+  <script>
+    async function checkAdmin() {
+      try {
+        const res = await fetch("/api/check-admin", {
+          credentials: "include"
+        });
+
+        const data = await res.json();
+
+        if (data.isAdmin) {
+          document.getElementById("dashboardBtn").style.display = "inline-block";
+        }
+      } catch (e) {}
+    }
+
+    function goDashboard() {
+      window.location.href = "/dashboard";
+    }
+
+    checkAdmin();
+  </script>
+
 </body>
 </html>
