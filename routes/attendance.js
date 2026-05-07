@@ -2,13 +2,23 @@ const express = require("express");
 const router = express.Router();
 
 const multer = require("multer");
+const streamifier = require("streamifier");
+
+const cloudinary = require("../config/cloudinary");
+
 const ExcelJS = require("exceljs");
 
 const Attendance = require("../models/Attendance");
 const allowedUsers = require("../config/allowedUsers");
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+
+const upload = multer({
+  storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  }
+});
 
 // ---------------- AUTH ----------------
 function ensureAuth(req, res, next) {
@@ -71,22 +81,48 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
       });
     }
 
-    const updated = await Attendance.findOneAndUpdate(
-      { email, date },
-      {
-        name,
-        email,
-        date,
-        day,
-        time,
-        workTypes,
-        imageUrl: null
-      },
-      {
-        new: true,
-        upsert: true
-      }
-    );
+    let imageUrl = null;
+
+if (req.file) {
+
+  const uploadFromBuffer = () => {
+    return new Promise((resolve, reject) => {
+
+      const stream = cloudinary.uploader.upload_stream(
+        {
+          folder: "trivi-attendance"
+        },
+        (error, result) => {
+          if (result) resolve(result);
+          else reject(error);
+        }
+      );
+
+      streamifier.createReadStream(req.file.buffer).pipe(stream);
+    });
+  };
+
+  const result = await uploadFromBuffer();
+
+  imageUrl = result.secure_url;
+}
+
+const updated = await Attendance.findOneAndUpdate(
+  { email, date },
+  {
+    name,
+    email,
+    date,
+    day,
+    time,
+    workTypes,
+    imageUrl
+  },
+  {
+    new: true,
+    upsert: true
+  }
+);
 
     res.json({
       success: true,

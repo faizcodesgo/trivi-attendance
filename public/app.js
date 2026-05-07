@@ -16,6 +16,12 @@ async function submitAttendance() {
   const workTypes = Array.from(checked).map(cb => cb.value);
 
   const formData = new FormData();
+const imageInput = document.getElementById("image");
+
+if (imageInput.files[0]) {
+  formData.append("image", imageInput.files[0]);
+}
+
   workTypes.forEach(w => formData.append("workTypes", w));
 
   try {
