@@ -164,6 +164,7 @@
     <button onclick="loadData()">Load</button>
     <button onclick="applyFilters()">Apply</button>
     <button onclick="resetFilters()">Reset</button>
+    <button onclick="exportExcel()">Excel Export</button>
   </div>
 
   <!-- STATS -->
@@ -260,6 +261,58 @@ function resetFilters() {
   document.getElementById("toDate").value = "";
 
   applyFilters();
+}
+
+async function exportExcel() {
+
+  const search = document.getElementById("searchInput").value;
+  const singleDate = document.getElementById("singleDate").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
+
+  const params = new URLSearchParams({
+    search,
+    singleDate,
+    fromDate,
+    toDate
+  });
+
+  try {
+
+    const response = await fetch(
+      "/attendance/export/excel?" + params.toString(),
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!response.ok) {
+      alert("Export failed");
+      return;
+    }
+
+    const blob = await response.blob();
+
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download = `attendance-${Date.now()}.xlsx`;
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+    console.log(err);
+    alert("Export error");
+  }
 }
 
 // STATS

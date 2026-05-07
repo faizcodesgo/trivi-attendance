@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const multer = require("multer");
+const ExcelJS = require("exceljs");
+
 const Attendance = require("../models/Attendance");
 const allowedUsers = require("../config/allowedUsers");
 
@@ -42,9 +44,11 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
 
     let workTypes = req.body.workTypes;
 
-    // normalize
     if (!workTypes) {
-      return res.status(400).json({ success: false, message: "Select at least one option" });
+      return res.status(400).json({
+        success: false,
+        message: "Select at least one option"
+      });
     }
 
     if (typeof workTypes === "string") {
@@ -53,25 +57,48 @@ router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
 
     workTypes = workTypes.filter(Boolean);
 
-    // STRICT LIMIT
     if (workTypes.length < 1) {
-      return res.status(400).json({ success: false, message: "Select at least one option" });
+      return res.status(400).json({
+        success: false,
+        message: "Select at least one option"
+      });
     }
 
     if (workTypes.length > 2) {
-      return res.status(400).json({ success: false, message: "Only 2 selections allowed" });
+      return res.status(400).json({
+        success: false,
+        message: "Only 2 selections allowed"
+      });
     }
 
     const updated = await Attendance.findOneAndUpdate(
       { email, date },
-      { name, email, date, day, time, workTypes, imageUrl: null },
-      { new: true, upsert: true }
+      {
+        name,
+        email,
+        date,
+        day,
+        time,
+        workTypes,
+        imageUrl: null
+      },
+      {
+        new: true,
+        upsert: true
+      }
     );
 
-    res.json({ success: true, message: "Saved successfully", data: updated });
+    res.json({
+      success: true,
+      message: "Saved successfully",
+      data: updated
+    });
 
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
@@ -81,13 +108,119 @@ router.get("/", ensureAuth, async (req, res) => {
   res.json(data);
 });
 
+// ---------------- EXPORT EXCEL ----------------
+router.get("/export/excel", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+
+    const {
+      search = "",
+      singleDate = "",
+      fromDate = "",
+      toDate = ""
+    } = req.query;
+
+    let records = await Attendance.find().sort({ date: -1 });
+
+    // SEARCH FILTER
+    if (search) {
+      const s = search.toLowerCase();
+
+      records = records.filter(r =>
+        (r.name || "").toLowerCase().includes(s) ||
+        (r.email || "").toLowerCase().includes(s)
+      );
+    }
+
+    // DATE FILTER
+    if (fromDate && toDate) {
+      records = records.filter(r =>
+        r.date >= fromDate && r.date <= toDate
+      );
+    } else if (singleDate) {
+      records = records.filter(r =>
+        r.date === singleDate
+      );
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet("Attendance");
+
+    worksheet.columns = [
+      { header: "Name", key: "name", width: 25 },
+      { header: "Email", key: "email", width: 35 },
+      { header: "Date", key: "date", width: 15 },
+      { header: "Day", key: "day", width: 15 },
+      { header: "Time", key: "time", width: 15 },
+      { header: "Work Type", key: "workTypes", width: 40 }
+    ];
+
+    // HEADER STYLE
+    worksheet.getRow(1).font = {
+      bold: true
+    };
+
+    worksheet.getRow(1).alignment = {
+      vertical: "middle",
+      horizontal: "center"
+    };
+
+    records.forEach(item => {
+      worksheet.addRow({
+        name: item.name || "",
+        email: item.email || "",
+        date: item.date || "",
+        day: item.day || "",
+        time: item.time || "",
+        workTypes: (item.workTypes || []).join(", ")
+      });
+    });
+
+    // CENTER ALIGN
+    worksheet.eachRow((row) => {
+      row.eachCell((cell) => {
+        cell.alignment = {
+          vertical: "middle",
+          horizontal: "center",
+          wrapText: true
+        };
+      });
+    });
+
+    const fileName = `attendance-${Date.now()}.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${fileName}`
+    );
+
+    await workbook.xlsx.write(res);
+
+    res.end();
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
+  }
+});
+
 // ---------------- UPDATE ----------------
 router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
     let { workTypes } = req.body;
 
     if (!workTypes) {
-      return res.status(400).json({ success: false, message: "workTypes required" });
+      return res.status(400).json({
+        success: false,
+        message: "workTypes required"
+      });
     }
 
     if (typeof workTypes === "string") {
@@ -95,30 +228,50 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
     }
 
     if (workTypes.length < 1) {
-      return res.status(400).json({ success: false, message: "Select at least one" });
+      return res.status(400).json({
+        success: false,
+        message: "Select at least one"
+      });
     }
 
     if (workTypes.length > 2) {
-      return res.status(400).json({ success: false, message: "Only 2 allowed" });
+      return res.status(400).json({
+        success: false,
+        message: "Only 2 allowed"
+      });
     }
 
     const updated = await Attendance.findByIdAndUpdate(
       req.params.id,
-      { workTypes, time: new Date().toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" }) },
+      {
+        workTypes,
+        time: new Date().toLocaleTimeString("en-IN", {
+          timeZone: "Asia/Kolkata"
+        })
+      },
       { new: true }
     );
 
-    res.json({ success: true, data: updated });
+    res.json({
+      success: true,
+      data: updated
+    });
 
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    res.status(500).json({
+      success: false,
+      message: err.message
+    });
   }
 });
 
 // ---------------- DELETE ----------------
 router.delete("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   await Attendance.findByIdAndDelete(req.params.id);
-  res.json({ success: true });
+
+  res.json({
+    success: true
+  });
 });
 
 module.exports = router;
