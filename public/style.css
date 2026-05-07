@@ -16,81 +16,48 @@ body{
 
 .container{
   width:100%;
-  max-width:1100px;
+  max-width:450px;
 }
 
 .card{
   background:white;
-  border-radius:24px;
-  overflow:hidden;
-  box-shadow:0 20px 45px rgba(0,0,0,0.25);
+  border-radius:22px;
+  padding:35px;
+  box-shadow:0 20px 40px rgba(0,0,0,0.25);
 }
 
-.login-layout{
-  display:flex;
-  min-height:700px;
-}
-
-/* LEFT PANEL */
-
-.left-panel{
-  width:45%;
-  background:
-    linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)),
-    url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop");
-  background-size:cover;
-  background-position:center;
-  color:white;
-  padding:60px;
-  display:flex;
-  flex-direction:column;
-  justify-content:flex-end;
-}
-
-.left-panel h1{
-  font-size:46px;
-  margin-bottom:15px;
-}
-
-.left-panel p{
-  line-height:1.7;
-  font-size:16px;
-  opacity:0.9;
-}
-
-/* RIGHT PANEL */
-
-.right-panel{
-  width:55%;
-  padding:50px;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  background:white;
-}
+/* HEADER */
 
 .header{
   text-align:center;
 }
 
 .logo{
-  width:120px;
-  height:120px;
+  width:110px;
+  height:110px;
   object-fit:cover;
   border-radius:50%;
-  margin-bottom:20px;
-  border:5px solid #f1f1f1;
+  margin-bottom:18px;
+  border:4px solid #f3f4f6;
 }
 
 .header h2{
-  font-size:36px;
-  margin-bottom:10px;
+  font-size:34px;
   color:#111827;
+  margin-bottom:10px;
 }
 
 .header p{
-  color:#666;
-  margin-bottom:25px;
+  color:#6b7280;
+  margin-bottom:22px;
+  font-size:15px;
+}
+
+/* DASHBOARD BUTTON */
+
+#dashboardBtn{
+  background:#2563eb;
+  margin-bottom:10px;
 }
 
 /* CHECKBOXES */
@@ -99,18 +66,19 @@ body{
   display:flex;
   flex-direction:column;
   gap:12px;
-  margin-top:20px;
+  margin-top:18px;
 }
 
 .checkboxes label{
   display:flex;
   align-items:center;
   gap:12px;
-  border:1px solid #e5e7eb;
   padding:14px;
+  border:1px solid #e5e7eb;
   border-radius:12px;
-  cursor:pointer;
   transition:0.2s;
+  cursor:pointer;
+  font-size:15px;
 }
 
 .checkboxes label:hover{
@@ -131,31 +99,31 @@ button,
   border:none;
   border-radius:12px;
   cursor:pointer;
-  margin-top:15px;
-  font-size:16px;
+  margin-top:14px;
+  font-size:15px;
   font-weight:600;
   transition:0.3s;
 }
 
 button{
-  background:#0f172a;
+  background:#111827;
   color:white;
 }
 
 button:hover{
-  background:#1e293b;
+  background:#1f2937;
   transform:translateY(-2px);
 }
 
 .upload-btn{
-  background:#111827;
+  background:#0f172a;
   color:white;
   text-align:center;
   display:block;
 }
 
 .upload-btn:hover{
-  background:#1f2937;
+  background:#1e293b;
 }
 
 .reset-btn{
@@ -190,33 +158,21 @@ button:hover{
 /* MESSAGE */
 
 #msg{
-  margin-top:16px;
+  margin-top:15px;
   text-align:center;
   font-weight:600;
 }
 
-/* DASHBOARD BUTTON */
-
-#dashboardBtn{
-  background:#2563eb;
-}
-
 /* MOBILE */
 
-@media(max-width:900px){
+@media(max-width:500px){
 
-  .login-layout{
-    flex-direction:column;
+  .card{
+    padding:25px;
   }
 
-  .left-panel{
-    width:100%;
-    min-height:260px;
-  }
-
-  .right-panel{
-    width:100%;
-    padding:35px 25px;
+  .header h2{
+    font-size:28px;
   }
 
 }
