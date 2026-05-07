@@ -1,79 +1,200 @@
 body {
-  font-family: Arial;
-  background: #f4f6f8;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e3a8a);
+  min-height: 100vh;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .container {
-  width: 400px;
-  margin-top: 50px;
+  width: 1000px;
+  min-height: 650px;
+  display: flex;
+  background: white;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 15px 40px rgba(0,0,0,0.25);
 }
 
-.header {
+/* LEFT SIDE */
+
+.left-panel {
+  width: 45%;
+  background:
+    linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
+    url("https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=1200&auto=format&fit=crop");
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 50px 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.company-box h1 {
+  font-size: 42px;
+  margin: 0;
+}
+
+.company-box h3 {
+  margin-top: 10px;
+  font-weight: normal;
+  opacity: 0.9;
+}
+
+.welcome-box {
   text-align: center;
 }
 
-.logo {
-  width: 160px;
-  border-radius: 60px;
+.welcome-box h2 {
+  font-size: 42px;
+  margin-bottom: 10px;
+}
+
+.welcome-box p {
+  font-size: 18px;
+  line-height: 1.7;
+  opacity: 0.9;
+}
+
+/* RIGHT SIDE */
+
+.right-panel {
+  width: 55%;
+  padding: 40px;
+  background: #ffffff;
+  display: flex;
+  flex-direction: column;
+}
+
+.top-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+#dashboardBtn {
+  width: auto;
+  padding: 12px 24px;
+  border-radius: 10px;
+}
+
+.form-title {
+  font-size: 30px;
+  margin-bottom: 25px;
+  color: #111827;
 }
 
 .card {
-  background: white;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0px 0px 10px #ccc;
-}
-
-input, button {
-  width: 92.5%;
-  margin-top: 10px;
-  padding: 10px;
+  width: 100%;
 }
 
 .checkboxes {
-  margin-top: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+  margin-bottom: 25px;
 }
 
 .checkboxes label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  cursor: pointer;
+  gap: 12px;
+  font-size: 18px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  padding: 16px;
+  border-radius: 12px;
+  transition: 0.2s;
+}
+
+.checkboxes label:hover {
+  background: #f1f5f9;
 }
 
 .checkboxes input[type="checkbox"] {
-  width: 16px;
-  height: 16px;
+  width: 20px;
+  height: 20px;
   margin: 0;
-}
-
-button {
-  background: black;
-  color: white;
-  border: none;
-  cursor: pointer;
 }
 
 .upload-btn {
   display: block;
   width: 100%;
   box-sizing: border-box;
-  padding: 10px;
-  background: black;
-  color: white;
-  border-radius: 6px;
-  cursor: pointer;
-  margin: 10px 0;
+  padding: 18px;
+  border: 2px dashed #93c5fd;
+  background: #eff6ff;
+  color: #1d4ed8;
   text-align: center;
-  font-size: 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  margin-bottom: 25px;
+  font-size: 17px;
+  font-weight: bold;
 }
 
-.upload-btn:hover {
-  opacity: 0.9;
+button {
+  width: 100%;
+  padding: 16px;
+  margin-top: 14px;
+  border: none;
+  border-radius: 12px;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+.submit-btn {
+  background: #0f172a;
+  color: white;
+}
+
+.reset-btn {
+  background: #f59e0b;
+  color: white;
+}
+
+.logout-btn {
+  background: #ef4444;
+  color: white;
+}
+
+#msg {
+  margin-top: 18px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* MOBILE */
+
+@media (max-width: 900px) {
+
+  body {
+    padding: 20px;
+  }
+
+  .container {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .left-panel {
+    width: 100%;
+    min-height: 300px;
+  }
+
+  .right-panel {
+    width: 100%;
+    padding: 25px;
+  }
 }
