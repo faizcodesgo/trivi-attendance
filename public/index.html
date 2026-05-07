@@ -1,107 +1,161 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>TriVi Infracons Attendance</title>
+  <title>TriVi Infracons</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
 <div class="container">
 
-  <!-- LEFT -->
-  <div class="left-panel">
+  <div class="card">
 
-    <div class="company-box">
-      <h1>TriVi Infracons</h1>
-      <h3>Pvt Ltd</h3>
-    </div>
+    <div class="login-layout">
 
-    <div class="welcome-box">
-      <h2>Welcome Back!</h2>
-      <p>
-        Employee Attendance System <br>
-        Mark attendance easily and professionally.
-      </p>
-    </div>
+      <!-- LEFT PANEL -->
+      <div class="left-panel">
+        <h1>TriVi Infracons</h1>
 
-  </div>
-
-  <!-- RIGHT -->
-  <div class="right-panel">
-
-    <div class="top-bar">
-      <button id="dashboardBtn" style="display:none;" onclick="goDashboard()">
-        Dashboard
-      </button>
-    </div>
-
-    <div class="form-title">
-      Select Work Type
-    </div>
-
-    <div class="card">
-
-      <div class="checkboxes">
-
-        <label>
-          <input type="checkbox" name="workTypes" value="Work From Home">
-          Work From Home
-        </label>
-
-        <label>
-          <input type="checkbox" name="workTypes" value="Office Management">
-          Office
-        </label>
-
-        <label>
-          <input type="checkbox" name="workTypes" value="Site Visit">
-          Site Visit
-        </label>
-
-        <label>
-          <input type="checkbox" name="workTypes" value="Leave">
-          Leave
-        </label>
-
-        <label>
-          <input type="checkbox" name="workTypes" value="Government Holiday">
-          Govt Holiday
-        </label>
-
+        <p>
+          Professional employee attendance management system
+          with cloud image uploads and smart dashboard analytics.
+        </p>
       </div>
 
-      <label for="image" class="upload-btn">
-        Upload Image
-      </label>
+      <!-- RIGHT PANEL -->
+      <div class="right-panel">
 
-      <input type="file" id="image" accept="image/*" hidden>
+        <div class="header">
 
-      <button class="submit-btn" onclick="submitAttendance()">
-        Submit Attendance
-      </button>
+          <img src="logo.jpeg" class="logo">
 
-      <button class="reset-btn" onclick="resetForm()">
-        Reset
-      </button>
+          <h2>Employee Attendance</h2>
 
-      <a href="/auth/logout">
-        <button class="logout-btn">
-          Logout
+          <p>Please mark your attendance</p>
+
+          <button
+            id="dashboardBtn"
+            style="display:none;"
+            onclick="goDashboard()"
+          >
+            Open Dashboard
+          </button>
+
+        </div>
+
+        <!-- CHECKBOXES -->
+        <div class="checkboxes">
+
+          <label>
+            <input type="checkbox" name="workTypes" value="Work From Home">
+            Work From Home
+          </label>
+
+          <label>
+            <input type="checkbox" name="workTypes" value="Office Management">
+            Office
+          </label>
+
+          <label>
+            <input type="checkbox" name="workTypes" value="Site Visit">
+            Site Visit
+          </label>
+
+          <label>
+            <input type="checkbox" name="workTypes" value="Leave">
+            Leave
+          </label>
+
+          <label>
+            <input type="checkbox" name="workTypes" value="Government Holiday">
+            Government Holiday
+          </label>
+
+        </div>
+
+        <!-- IMAGE -->
+        <label for="image" class="upload-btn">
+          Upload Image
+        </label>
+
+        <input
+          type="file"
+          id="image"
+          accept="image/*"
+          hidden
+        >
+
+        <!-- IMAGE NAME -->
+        <div id="imageName" class="image-name">
+          No image selected
+        </div>
+
+        <!-- LOADING -->
+        <div id="loadingBox" class="loading-box" style="display:none;">
+          Uploading image...
+        </div>
+
+        <!-- BUTTONS -->
+        <button id="submitBtn" onclick="submitAttendance()">
+          Submit Attendance
         </button>
-      </a>
 
-      <p id="msg"></p>
+        <button
+          onclick="resetForm()"
+          class="reset-btn"
+        >
+          Reset
+        </button>
 
+        <a href="/auth/logout" style="width:100%;">
+          <button>
+            Logout
+          </button>
+        </a>
+
+        <p id="msg"></p>
+
+      </div>
     </div>
-
   </div>
-
 </div>
 
 <script src="app.js"></script>
 
 <script>
+
+const imageInput = document.getElementById("image");
+const imageName = document.getElementById("imageName");
+
+imageInput.addEventListener("change", () => {
+
+  if (imageInput.files.length > 0) {
+    imageName.innerText = imageInput.files[0].name;
+  } else {
+    imageName.innerText = "No image selected";
+  }
+
+});
+
+// RESET
+function resetForm() {
+
+  document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+    cb.checked = false;
+  });
+
+  imageInput.value = "";
+
+  imageName.innerText = "No image selected";
+
+  document.getElementById("msg").innerText = "";
+
+}
+
+// ADMIN CHECK
 async function checkAdmin() {
+
   try {
 
     const res = await fetch("/api/check-admin", {
@@ -115,6 +169,7 @@ async function checkAdmin() {
     }
 
   } catch (e) {}
+
 }
 
 function goDashboard() {
@@ -122,8 +177,8 @@ function goDashboard() {
 }
 
 checkAdmin();
+
 </script>
 
 </body>
-
 </html>
