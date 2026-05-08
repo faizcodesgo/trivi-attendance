@@ -1,154 +1,223 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Attendance</title>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>TriVi Infracons</title>
+
   <link rel="stylesheet" href="style.css">
 
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      font-family: Arial;
-    }
-
-    .left {
-      flex: 1;
-      background: linear-gradient(135deg,#0b3a6a,#06213d);
-      color: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .left img {
-      width: 140px;
-      border-radius: 50%;
-      margin-bottom: 20px;
-    }
-
-    .right {
-      flex: 1.2;
-      padding: 40px;
-      background: #f5f6f8;
-    }
-
-    .box {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-    }
-
-    .checkbox-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 12px;
-      border: 1px solid #ddd;
-      border-radius: 10px;
-      margin-bottom: 10px;
-    }
-
-    button {
-      width: 100%;
-      margin-top: 10px;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-    }
-
-    .submit { background: #702020; color: white; }
-    .reset { background: orange; }
-    .dash { background: #111; color: white; }
-  </style>
 </head>
 
 <body>
 
-<!-- LEFT -->
-<div class="left">
-  <img src="logo.jpeg">
-  <h2>TriVi Infracons</h2>
-  <p>Attendance System</p>
-</div>
+<div class="split-container">
 
-<!-- RIGHT -->
-<div class="right">
+  <!-- =========================
+       LEFT SIDE
+  ========================== -->
 
-  <div class="box">
+  <div class="left-panel">
 
-    <!-- CHECKBOXES -->
-    <label class="checkbox-item">
-      <input type="checkbox" name="workTypes" value="Work From Home">
-      Work From Home
-    </label>
+    <div class="left-content">
 
-    <label class="checkbox-item">
-      <input type="checkbox" name="workTypes" value="Office Management">
-      Office
-    </label>
+      <img
+        src="logo.jpeg"
+        class="hero-logo"
+      >
 
-    <label class="checkbox-item">
-      <input type="checkbox" name="workTypes" value="Site Visit">
-      Site Visit
-    </label>
+      <h1>Welcome</h1>
 
-    <label class="checkbox-item">
-      <input type="checkbox" name="workTypes" value="Leave">
-      Leave
-    </label>
+      <p class="hero-text">
+        Smart Employee Attendance
+        System for TriVi Infracons
+      </p>
 
-    <label class="checkbox-item">
-      <input type="checkbox" name="workTypes" value="Government Holiday">
-      Govt Holiday
-    </label>
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
+        class="hero-image"
+      >
 
-    <!-- BUTTONS -->
-    <button class="submit" onclick="submitAttendance()">Submit</button>
-    <button class="reset" onclick="resetForm()">Reset</button>
+    </div>
 
-    <!-- ADMIN ONLY -->
-    <button id="dashboardBtn" class="dash" style="display:none" onclick="goDashboard()">
-      Dashboard
-    </button>
+  </div>
 
-    <button onclick="window.location.href='/auth/logout'">
-      Logout
-    </button>
+  <!-- =========================
+       RIGHT SIDE
+  ========================== -->
 
-    <p id="msg"></p>
+  <div class="right-panel">
+
+    <div class="form-box">
+
+      <!-- HEADER -->
+      <div class="header">
+
+        <img
+          src="logo.jpeg"
+          class="logo"
+        >
+
+        <h2>Employee Attendance</h2>
+
+        <p>
+          Please mark your attendance
+        </p>
+
+      </div>
+
+      <!-- CHECKBOXES -->
+      <div class="checkboxes">
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="workTypes"
+            value="Work From Home"
+          >
+
+          <span>Work From Home</span>
+
+        </label>
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="workTypes"
+            value="Office Management"
+          >
+
+          <span>Office Management</span>
+
+        </label>
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="workTypes"
+            value="Site Visit"
+          >
+
+          <span>Site Visit</span>
+
+        </label>
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="workTypes"
+            value="Leave"
+          >
+
+          <span>Leave</span>
+
+        </label>
+
+        <label class="checkbox-item">
+
+          <input
+            type="checkbox"
+            name="workTypes"
+            value="Government Holiday"
+          >
+
+          <span>Government Holiday</span>
+
+        </label>
+
+      </div>
+
+      <!-- IMAGE -->
+      <label
+        for="image"
+        class="upload-btn"
+      >
+        Upload Image
+      </label>
+
+      <input
+        type="file"
+        id="image"
+        accept="image/*"
+        hidden
+      >
+
+      <!-- IMAGE NAME -->
+      <div
+        id="imageName"
+        class="image-name"
+      >
+        No image selected
+      </div>
+
+      <!-- LOADING -->
+      <div
+        id="loadingBox"
+        class="loading-box"
+        style="display:none;"
+      >
+        Uploading image...
+      </div>
+
+      <!-- BUTTONS -->
+      <button
+        id="submitBtn"
+        onclick="submitAttendance()"
+        class="submit-btn"
+      >
+        Submit Attendance
+      </button>
+
+      <button
+        onclick="resetForm()"
+        class="reset-btn"
+      >
+        Reset
+      </button>
+
+      <!-- ADMIN ONLY -->
+      <button
+        id="dashboardBtn"
+        onclick="goDashboard()"
+        class="dashboard-btn"
+        style="display:none;"
+      >
+        Open Dashboard
+      </button>
+
+      <!-- LOGOUT -->
+      <a
+        href="/auth/logout"
+        style="width:100%;"
+      >
+
+        <button class="logout-btn">
+          Logout
+        </button>
+
+      </a>
+
+      <!-- MESSAGE -->
+      <p id="msg"></p>
+
+    </div>
 
   </div>
 
 </div>
 
 <script src="app.js"></script>
-
-<script>
-
-async function checkAdmin() {
-  const res = await fetch("/api/check-admin", { credentials: "include" });
-  const data = await res.json();
-
-  if (data.isAdmin) {
-    document.getElementById("dashboardBtn").style.display = "block";
-  }
-}
-
-function goDashboard() {
-  window.location.href = "/dashboard";
-}
-
-function resetForm() {
-  document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
-}
-
-checkAdmin();
-
-</script>
 
 </body>
 </html>

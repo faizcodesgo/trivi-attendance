@@ -1,154 +1,278 @@
-/* =========================
-   GLOBAL RESET
-========================= */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:Arial,sans-serif;
 }
 
-body {
-  background: #f4f6f8;
-  color: #111827;
+body{
+  background:#f4f6f9;
 }
 
 /* =========================
-   GLOBAL BUTTONS
+   SPLIT LAYOUT
 ========================= */
-button {
-  cursor: pointer;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 600;
-  transition: 0.25s;
-}
 
-button:hover {
-  transform: translateY(-2px);
-}
-
-/* Primary button */
-.btn-primary {
-  background: #111827;
-  color: white;
-}
-
-/* Danger */
-.btn-danger {
-  background: #dc2626;
-  color: white;
-}
-
-/* Success / Maroon theme */
-.btn-maroon {
-  background: #702020;
-  color: white;
+.split-container{
+  display:flex;
+  min-height:100vh;
 }
 
 /* =========================
-   CARDS (SaaS style)
+   LEFT PANEL
 ========================= */
-.card {
-  background: white;
-  border-radius: 14px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  padding: 20px;
+
+.left-panel{
+  flex:1;
+  background:linear-gradient(
+    135deg,
+    #0b3a6a,
+    #06213d
+  );
+  color:white;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px;
+}
+
+.left-content{
+  text-align:center;
+}
+
+.hero-logo{
+  width:100px;
+  height:100px;
+  border-radius:50%;
+  margin-bottom:20px;
+}
+
+.hero-text{
+  margin-top:10px;
+  color:#dbeafe;
+  line-height:1.6;
+}
+
+.hero-image{
+  width:220px;
+  margin-top:30px;
 }
 
 /* =========================
-   INPUTS
+   RIGHT PANEL
 ========================= */
-input, select {
-  padding: 10px;
-  border-radius: 10px;
-  border: 1px solid #e5e7eb;
-  outline: none;
-  width: 100%;
-}
 
-input:focus {
-  border-color: #2563eb;
+.right-panel{
+  flex:1.2;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px;
 }
 
 /* =========================
-   TABLE BASE STYLE
+   FORM BOX
 ========================= */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
 
-th, td {
-  padding: 12px;
-  border-bottom: 1px solid #eee;
-  text-align: center;
-}
+.form-box{
+  width:100%;
+  max-width:480px;
 
-th {
-  background: #111827;
-  color: white;
+  background:white;
+
+  padding:35px;
+
+  border-radius:22px;
+
+  box-shadow:
+    0 10px 35px rgba(0,0,0,0.08);
 }
 
 /* =========================
-   MODALS (GLOBAL)
+   HEADER
 ========================= */
-.modal {
-  display: none;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.5);
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
+
+.header{
+  text-align:center;
+  margin-bottom:25px;
 }
 
-.modal-content {
-  background: white;
-  padding: 20px;
-  border-radius: 14px;
-  min-width: 280px;
+.logo{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  margin-bottom:15px;
+}
+
+.header h2{
+  color:#111827;
+  margin-bottom:8px;
+}
+
+.header p{
+  color:#6b7280;
 }
 
 /* =========================
-   IMAGE PREVIEW
+   CHECKBOXES
 ========================= */
-.image-preview {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
+
+.checkboxes{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.checkbox-item{
+
+  display:flex;
+
+  align-items:center;
+
+  gap:12px;
+
+  padding:14px;
+
+  border:1px solid #e5e7eb;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  transition:0.2s;
+}
+
+.checkbox-item:hover{
+  background:#f9fafb;
+}
+
+.checkbox-item input{
+  width:18px;
+  height:18px;
 }
 
 /* =========================
-   UTILITIES
+   BUTTONS
 ========================= */
-.text-center {
-  text-align: center;
+
+button,
+.upload-btn{
+
+  width:100%;
+
+  padding:14px;
+
+  border:none;
+
+  border-radius:12px;
+
+  margin-top:14px;
+
+  cursor:pointer;
+
+  font-size:15px;
+
+  font-weight:600;
+
+  transition:0.25s;
 }
 
-.flex {
-  display: flex;
+button:hover,
+.upload-btn:hover{
+  transform:translateY(-2px);
 }
 
-.gap-10 {
-  gap: 10px;
+.submit-btn{
+  background:#702020;
+  color:white;
+}
+
+.reset-btn{
+  background:#f59e0b;
+  color:white;
+}
+
+.dashboard-btn{
+  background:#111827;
+  color:white;
+}
+
+.logout-btn{
+  background:#dc2626;
+  color:white;
+}
+
+.upload-btn{
+  display:block;
+  text-align:center;
+  background:#2563eb;
+  color:white;
 }
 
 /* =========================
-   RESPONSIVE BASE
+   IMAGE NAME
 ========================= */
-@media (max-width: 768px) {
-  .card {
-    padding: 15px;
+
+.image-name{
+  text-align:center;
+  margin-top:10px;
+  color:#6b7280;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading-box{
+  margin-top:14px;
+
+  background:#eff6ff;
+
+  color:#2563eb;
+
+  padding:12px;
+
+  border-radius:10px;
+
+  text-align:center;
+
+  font-weight:600;
+}
+
+/* =========================
+   MESSAGE
+========================= */
+
+#msg{
+  margin-top:15px;
+  text-align:center;
+  font-weight:600;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:900px){
+
+  .split-container{
+    flex-direction:column;
   }
 
-  th, td {
-    font-size: 12px;
+  .left-panel{
+    padding:30px 20px;
   }
+
+  .hero-image{
+    width:150px;
+  }
+
+  .right-panel{
+    padding:20px;
+  }
+
 }
