@@ -4,59 +4,68 @@
   <title>Login - TriVi Infracons</title>
   <link rel="stylesheet" href="style.css">
 
-  <style>
-    body {
-      margin: 0;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #0a0a0a;
-      font-family: Arial;
-    }
-
-    .card {
-      width: 350px;
-      padding: 30px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.06);
-      backdrop-filter: blur(15px);
-      text-align: center;
-      color: white;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-
-    .logo {
-      width: 90px;
-      height: 90px;
-      border-radius: 50%;
-      margin-bottom: 15px;
-    }
-
-    a button {
-      width: 100%;
-      padding: 12px;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      background: white;
-      font-weight: bold;
-    }
-  </style>
 </head>
 
-<body>
+<body class="login-page">
 
-  <div class="card">
+  <div class="login-bg"></div>
 
-    <img src="logo.jpeg" class="logo">
-    <h2>TriVi Infracons</h2>
-    <p>Login to continue</p>
+  <div class="login-container">
 
-    <!-- ONLY REAL LOGIN -->
-    <a href="/auth/google">
-      <button>Continue with Google</button>
-    </a>
+    <!-- LEFT SIDE -->
+    <div class="login-left">
+
+      <div class="login-left-content">
+
+        <img
+          src="logo.jpeg"
+          class="login-hero-logo"
+        >
+
+        <h1>
+          Welcome Back
+        </h1>
+
+        <p>
+          Smart Employee Attendance
+          Management System
+        </p>
+
+        <div class="glass-circle one"></div>
+        <div class="glass-circle two"></div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="login-right">
+
+      <div class="login-card">
+
+        <img
+          src="logo.jpeg"
+          class="login-logo"
+        >
+
+        <h2>TriVi Infracons</h2>
+
+        <p class="login-subtitle">
+          Login to continue
+        </p>
+
+        <!-- KEEP SAME LOGIN -->
+        <a href="/auth/google">
+
+          <button class="google-btn">
+            Continue with Google
+          </button>
+
+        </a>
+
+      </div>
+
+    </div>
 
   </div>
 

@@ -1,12 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
 *{
   margin:0;
   padding:0;
   box-sizing:border-box;
-  font-family:Arial,sans-serif;
+  font-family:'Poppins',sans-serif;
 }
 
 body{
-  background:#f4f6f9;
+  background:
+    linear-gradient(
+      135deg,
+      #2b0d12,
+      #5a0f18,
+      #140509
+    );
+
+  min-height:100vh;
+  overflow-x:hidden;
 }
 
 /* =========================
@@ -16,6 +27,29 @@ body{
 .split-container{
   display:flex;
   min-height:100vh;
+  position:relative;
+}
+
+/* =========================
+   GLASS EFFECT
+========================= */
+
+.left-panel,
+.form-box,
+.sidebar,
+.table-card,
+.card,
+.controls{
+  background:
+    rgba(255,255,255,0.12);
+
+  backdrop-filter:blur(18px);
+
+  border:
+    1px solid rgba(255,255,255,0.18);
+
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.18);
 }
 
 /* =========================
@@ -24,12 +58,6 @@ body{
 
 .left-panel{
   flex:1;
-  background:linear-gradient(
-    135deg,
-    #0b3a6a,
-    #06213d
-  );
-  color:white;
 
   display:flex;
   justify-content:center;
@@ -40,24 +68,48 @@ body{
 
 .left-content{
   text-align:center;
+  color:white;
+
+  animation:fadeSlide 1s ease;
 }
 
 .hero-logo{
-  width:100px;
-  height:100px;
+  width:140px;
+  height:140px;
+
   border-radius:50%;
-  margin-bottom:20px;
+
+  margin-bottom:25px;
+
+  box-shadow:
+    0 10px 30px rgba(255,255,255,0.18);
+}
+
+.left-content h1{
+  font-size:52px;
+  margin-bottom:12px;
+  font-weight:700;
 }
 
 .hero-text{
-  margin-top:10px;
-  color:#dbeafe;
-  line-height:1.6;
+  font-size:18px;
+  line-height:1.8;
+  color:#f3f4f6;
 }
 
 .hero-image{
+  width:240px;
+  margin-top:35px;
+
+  filter:drop-shadow(
+    0 10px 25px rgba(0,0,0,0.35)
+  );
+
+  animation:floatImage 4s ease-in-out infinite;
+}
+
+.calendar-image{
   width:220px;
-  margin-top:30px;
 }
 
 /* =========================
@@ -65,7 +117,7 @@ body{
 ========================= */
 
 .right-panel{
-  flex:1.2;
+  flex:1.1;
 
   display:flex;
   justify-content:center;
@@ -80,16 +132,15 @@ body{
 
 .form-box{
   width:100%;
-  max-width:480px;
+  max-width:520px;
 
-  background:white;
+  border-radius:34px;
 
-  padding:35px;
+  padding:38px;
 
-  border-radius:22px;
+  position:relative;
 
-  box-shadow:
-    0 10px 35px rgba(0,0,0,0.08);
+  animation:fadeSlide 1s ease;
 }
 
 /* =========================
@@ -98,23 +149,29 @@ body{
 
 .header{
   text-align:center;
-  margin-bottom:25px;
+  margin-bottom:28px;
+  color:white;
 }
 
 .logo{
-  width:90px;
-  height:90px;
+  width:110px;
+  height:110px;
+
   border-radius:50%;
-  margin-bottom:15px;
+
+  margin-bottom:18px;
+
+  box-shadow:
+    0 10px 25px rgba(255,255,255,0.2);
 }
 
 .header h2{
-  color:#111827;
+  font-size:34px;
   margin-bottom:8px;
 }
 
 .header p{
-  color:#6b7280;
+  color:#f3f4f6;
 }
 
 /* =========================
@@ -124,30 +181,39 @@ body{
 .checkboxes{
   display:flex;
   flex-direction:column;
-  gap:12px;
+  gap:14px;
 }
 
 .checkbox-item{
-
   display:flex;
-
   align-items:center;
+  gap:14px;
 
-  gap:12px;
+  padding:16px 18px;
 
-  padding:14px;
+  border-radius:18px;
 
-  border:1px solid #e5e7eb;
+  background:
+    rgba(255,255,255,0.12);
 
-  border-radius:12px;
+  border:
+    1px solid rgba(255,255,255,0.16);
+
+  color:white;
+
+  transition:0.3s ease;
 
   cursor:pointer;
-
-  transition:0.2s;
 }
 
 .checkbox-item:hover{
-  background:#f9fafb;
+  transform:translateY(-3px);
+
+  background:
+    rgba(255,255,255,0.18);
+
+  box-shadow:
+    0 10px 24px rgba(0,0,0,0.16);
 }
 
 .checkbox-item input{
@@ -164,53 +230,79 @@ button,
 
   width:100%;
 
-  padding:14px;
+  padding:16px;
 
   border:none;
 
-  border-radius:12px;
+  border-radius:18px;
 
-  margin-top:14px;
+  margin-top:15px;
 
   cursor:pointer;
 
-  font-size:15px;
+  font-size:16px;
 
   font-weight:600;
 
-  transition:0.25s;
+  transition:0.3s ease;
+
+  color:white;
 }
 
 button:hover,
 .upload-btn:hover{
-  transform:translateY(-2px);
+  transform:translateY(-3px) scale(1.01);
+
+  box-shadow:
+    0 12px 28px rgba(0,0,0,0.22);
 }
 
 .submit-btn{
-  background:#702020;
-  color:white;
+  background:
+    linear-gradient(
+      135deg,
+      #7f1d1d,
+      #991b1b
+    );
 }
 
 .reset-btn{
-  background:#f59e0b;
-  color:white;
+  background:
+    linear-gradient(
+      135deg,
+      #f59e0b,
+      #d97706
+    );
 }
 
 .dashboard-btn{
-  background:#111827;
-  color:white;
+  background:
+    linear-gradient(
+      135deg,
+      #111827,
+      #1f2937
+    );
 }
 
 .logout-btn{
-  background:#dc2626;
-  color:white;
+  background:
+    linear-gradient(
+      135deg,
+      #dc2626,
+      #991b1b
+    );
 }
 
 .upload-btn{
   display:block;
   text-align:center;
-  background:#2563eb;
-  color:white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #2563eb,
+      #1d4ed8
+    );
 }
 
 /* =========================
@@ -218,9 +310,13 @@ button:hover,
 ========================= */
 
 .image-name{
+  margin-top:12px;
+
   text-align:center;
-  margin-top:10px;
-  color:#6b7280;
+
+  color:#f3f4f6;
+
+  font-size:14px;
 }
 
 /* =========================
@@ -228,19 +324,25 @@ button:hover,
 ========================= */
 
 .loading-box{
-  margin-top:14px;
+  margin-top:16px;
 
-  background:#eff6ff;
+  background:
+    rgba(255,255,255,0.15);
 
-  color:#2563eb;
+  border:
+    1px solid rgba(255,255,255,0.2);
 
-  padding:12px;
+  color:white;
 
-  border-radius:10px;
+  padding:14px;
+
+  border-radius:14px;
 
   text-align:center;
 
   font-weight:600;
+
+  animation:pulse 1s infinite;
 }
 
 /* =========================
@@ -248,9 +350,116 @@ button:hover,
 ========================= */
 
 #msg{
-  margin-top:15px;
+  margin-top:18px;
   text-align:center;
+  color:white;
   font-weight:600;
+}
+
+/* =========================
+   DASHBOARD FILTERS
+========================= */
+
+.controls{
+  display:flex;
+  flex-wrap:wrap;
+  gap:12px;
+
+  padding:20px;
+
+  border-radius:20px;
+}
+
+.control-group{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.control-group label{
+  color:white;
+  font-size:13px;
+}
+
+.control-group input{
+  padding:12px;
+
+  border-radius:12px;
+
+  border:none;
+
+  background:
+    rgba(255,255,255,0.12);
+
+  color:white;
+}
+
+/* =========================
+   MODAL CHECKBOX
+========================= */
+
+.checkbox-group{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:15px;
+}
+
+.checkbox-group label{
+  display:flex;
+  align-items:center;
+  gap:10px;
+
+  padding:12px;
+
+  border-radius:12px;
+
+  background:
+    rgba(255,255,255,0.08);
+}
+
+/* =========================
+   ANIMATIONS
+========================= */
+
+@keyframes fadeSlide{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+
+@keyframes floatImage{
+  0%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-10px);
+  }
+
+  100%{
+    transform:translateY(0);
+  }
+}
+
+@keyframes pulse{
+  0%{
+    opacity:1;
+  }
+
+  50%{
+    opacity:0.6;
+  }
+
+  100%{
+    opacity:1;
+  }
 }
 
 /* =========================
@@ -267,86 +476,283 @@ button:hover,
     padding:30px 20px;
   }
 
+  .left-content h1{
+    font-size:38px;
+  }
+
   .hero-image{
-    width:150px;
+    width:180px;
   }
 
   .right-panel{
     padding:20px;
   }
 
-}
-/* DASHBOARD FILTERS */
+  .form-box{
+    padding:28px;
+  }
 
-.controls{
+  .header h2{
+    font-size:28px;
+  }
+}
+
+/* =========================
+   LOGIN PAGE
+========================= */
+
+.login-page{
+  overflow:hidden;
+
+  background:
+    linear-gradient(
+      135deg,
+      #140509,
+      #2b0d12,
+      #5a0f18
+    );
+}
+
+.login-container{
+  min-height:100vh;
 
   display:flex;
 
-  flex-wrap:wrap;
+  position:relative;
 
-  gap:12px;
+  z-index:2;
+}
 
-  background:white;
+/* =========================
+   LEFT SIDE
+========================= */
+
+.login-left{
+  flex:1;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px;
+
+  position:relative;
+}
+
+.login-left-content{
+  position:relative;
+
+  text-align:center;
+
+  color:white;
+
+  animation:fadeSlide 1s ease;
+}
+
+.login-hero-logo{
+  width:150px;
+  height:150px;
+
+  border-radius:50%;
+
+  margin-bottom:24px;
+
+  box-shadow:
+    0 15px 35px rgba(0,0,0,0.3);
+}
+
+.login-left h1{
+  font-size:58px;
+  margin-bottom:12px;
+}
+
+.login-left p{
+  font-size:18px;
+  color:#f3f4f6;
+  line-height:1.8;
+}
+
+/* =========================
+   RIGHT SIDE
+========================= */
+
+.login-right{
+  flex:1;
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  padding:40px;
+}
+
+/* =========================
+   LOGIN CARD
+========================= */
+
+.login-card{
+  width:100%;
+  max-width:430px;
+
+  padding:42px;
+
+  border-radius:34px;
+
+  text-align:center;
+
+  background:
+    rgba(255,255,255,0.1);
+
+  backdrop-filter:blur(20px);
+
+  border:
+    1px solid rgba(255,255,255,0.12);
+
+  box-shadow:
+    0 10px 40px rgba(0,0,0,0.25);
+
+  animation:fadeSlide 1s ease;
+}
+
+.login-logo{
+  width:110px;
+  height:110px;
+
+  border-radius:50%;
+
+  margin-bottom:20px;
+}
+
+.login-card h2{
+  color:white;
+
+  font-size:34px;
+
+  margin-bottom:10px;
+}
+
+.login-subtitle{
+  color:#f3f4f6;
+
+  margin-bottom:28px;
+}
+
+/* =========================
+   GOOGLE BUTTON
+========================= */
+
+.google-btn{
+  width:100%;
 
   padding:18px;
 
-  border-radius:14px;
+  border:none;
 
-  margin-bottom:20px;
+  border-radius:18px;
 
-  box-shadow:
-    0 4px 14px rgba(0,0,0,0.06);
-}
+  cursor:pointer;
 
-.control-group{
-
-  display:flex;
-
-  flex-direction:column;
-
-  gap:6px;
-}
-
-.control-group label{
-
-  font-size:13px;
+  font-size:16px;
 
   font-weight:600;
 
-  color:#374151;
+  color:white;
+
+  background:
+    linear-gradient(
+      135deg,
+      #7f1d1d,
+      #991b1b
+    );
+
+  transition:0.3s ease;
 }
 
-.control-group input{
+.google-btn:hover{
+  transform:
+    translateY(-3px)
+    scale(1.02);
 
-  padding:10px;
-
-  border:1px solid #d1d5db;
-
-  border-radius:8px;
+  box-shadow:
+    0 14px 30px rgba(0,0,0,0.25);
 }
 
-.checkbox-group{
+/* =========================
+   FLOATING CIRCLES
+========================= */
 
-  display:flex;
+.glass-circle{
+  position:absolute;
 
-  flex-direction:column;
+  border-radius:50%;
 
-  gap:12px;
+  background:
+    rgba(255,255,255,0.08);
 
-  margin-top:15px;
+  backdrop-filter:blur(12px);
+
+  animation:floatCircle 6s ease-in-out infinite;
 }
 
-.checkbox-group label{
+.glass-circle.one{
+  width:140px;
+  height:140px;
 
-  display:flex;
+  top:-30px;
+  left:-50px;
+}
 
-  align-items:center;
+.glass-circle.two{
+  width:100px;
+  height:100px;
 
-  gap:10px;
+  bottom:-20px;
+  right:-30px;
 
-  padding:10px;
+  animation-delay:2s;
+}
 
-  border:1px solid #eee;
+/* =========================
+   ANIMATION
+========================= */
 
-  border-radius:8px;
+@keyframes floatCircle{
+  0%{
+    transform:translateY(0);
+  }
+
+  50%{
+    transform:translateY(-18px);
+  }
+
+  100%{
+    transform:translateY(0);
+  }
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:900px){
+
+  .login-container{
+    flex-direction:column;
+  }
+
+  .login-left{
+    padding:30px 20px;
+  }
+
+  .login-left h1{
+    font-size:42px;
+  }
+
+  .login-right{
+    padding:20px;
+  }
+
+  .login-card{
+    padding:30px;
+  }
 }
