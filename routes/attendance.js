@@ -168,15 +168,37 @@ router.get("/export/excel", ensureAuth, ensureAdmin, async (req, res) => {
     }
 
     // DATE FILTER
+    
     if (fromDate && toDate) {
-      records = records.filter(r =>
-        r.date >= fromDate && r.date <= toDate
-      );
-    } else if (singleDate) {
-      records = records.filter(r =>
-        r.date === singleDate
-      );
-    }
+
+  records = records.filter(r => {
+
+    const recordDate =
+      new Date(r.date)
+      .toISOString()
+      .split("T")[0];
+
+    return (
+      recordDate >= fromDate
+      &&
+      recordDate <= toDate
+    );
+  });
+
+}
+
+else if (singleDate) {
+
+  records = records.filter(r => {
+
+    const recordDate =
+      new Date(r.date)
+      .toISOString()
+      .split("T")[0];
+
+    return recordDate === singleDate;
+  });
+}
 
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Attendance");

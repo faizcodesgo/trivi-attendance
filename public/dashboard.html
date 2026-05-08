@@ -188,6 +188,51 @@
 <div class="sidebar">
   <h2>TriVi</h2>
 
+  <!-- FILTERS -->
+<div class="controls">
+
+  <!-- SEARCH -->
+  <div class="control-group">
+    <label>Search</label>
+    <input type="text" id="searchInput">
+  </div>
+
+  <!-- PINPOINT -->
+  <div class="control-group">
+    <label>📍 Pinpoint Date</label>
+    <input type="date" id="singleDate">
+  </div>
+
+  <!-- RANGE -->
+  <div class="control-group">
+    <label>📅 From Date</label>
+    <input type="date" id="fromDate">
+  </div>
+
+  <div class="control-group">
+    <label>📅 To Date</label>
+    <input type="date" id="toDate">
+  </div>
+
+  <!-- BUTTONS -->
+  <button onclick="loadData()">
+    Load All
+  </button>
+
+  <button onclick="applyFilters()">
+    Apply
+  </button>
+
+  <button onclick="resetFilters()">
+    Reset
+  </button>
+
+  <button onclick="exportExcel()">
+    Excel Export
+  </button>
+
+</div>
+
   <div class="nav">
     <a href="/dashboard">📊 Dashboard</a>
     <a href="/">📅 Attendance</a>
@@ -406,26 +451,38 @@ function applyFilters() {
   }
 
   // DATE FILTER
-  if (fromDate && toDate) {
+if (fromDate && toDate) {
 
-    // RANGE
-    filtered = filtered.filter(item =>
+  // RANGE DATE
+  filtered = filtered.filter(item => {
 
-      item.date >= fromDate
+    const itemDate =
+      new Date(item.date)
+      .toISOString()
+      .split("T")[0];
+
+    return (
+      itemDate >= fromDate
       &&
-      item.date <= toDate
+      itemDate <= toDate
     );
+  });
 
-  }
+}
 
-  else if (singleDate) {
+else if (singleDate) {
 
-    // PINPOINT
-    filtered = filtered.filter(item =>
+  // PINPOINT DATE
+  filtered = filtered.filter(item => {
 
-      item.date === singleDate
-    );
-  }
+    const itemDate =
+      new Date(item.date)
+      .toISOString()
+      .split("T")[0];
+
+    return itemDate === singleDate;
+  });
+}
 
   render(filtered);
 }
@@ -459,12 +516,19 @@ async function exportExcel() {
   const toDate =
     document.getElementById("toDate").value;
 
-  const params = new URLSearchParams({
-    search,
-    singleDate,
-    fromDate,
-    toDate
-  });
+  const params = new URLSearchParams();
+
+if (search)
+  params.append("search", search);
+
+if (singleDate)
+  params.append("singleDate", singleDate);
+
+if (fromDate)
+  params.append("fromDate", fromDate);
+
+if (toDate)
+  params.append("toDate", toDate);
 
   try {
 

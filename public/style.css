@@ -276,3 +276,51 @@ button:hover,
   }
 
 }
+/* DASHBOARD FILTERS */
+
+.controls{
+
+  display:flex;
+
+  flex-wrap:wrap;
+
+  gap:12px;
+
+  background:white;
+
+  padding:18px;
+
+  border-radius:14px;
+
+  margin-bottom:20px;
+
+  box-shadow:
+    0 4px 14px rgba(0,0,0,0.06);
+}
+
+.control-group{
+
+  display:flex;
+
+  flex-direction:column;
+
+  gap:6px;
+}
+
+.control-group label{
+
+  font-size:13px;
+
+  font-weight:600;
+
+  color:#374151;
+}
+
+.control-group input{
+
+  padding:10px;
+
+  border:1px solid #d1d5db;
+
+  border-radius:8px;
+}
