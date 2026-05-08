@@ -1,226 +1,123 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Attendance - TriVi Infracons</title>
+  <title>Attendance</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      height: 100vh;
       display: flex;
-      background: #f4f6f8;
+      height: 100vh;
+      font-family: Arial;
     }
 
-    /* LEFT PANEL */
-    .left-panel {
+    .left {
       flex: 1;
-      background: linear-gradient(135deg, #0b3a6a, #06213d);
+      background: linear-gradient(135deg,#0b3a6a,#06213d);
       color: white;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      padding: 40px;
-      text-align: center;
+      padding: 20px;
     }
 
-    .left-panel img {
-      width: 110px;
-      height: 110px;
+    .left img {
+      width: 140px;
       border-radius: 50%;
       margin-bottom: 20px;
-      border: 3px solid rgba(255,255,255,0.3);
     }
 
-    .left-panel h1 {
-      margin-bottom: 10px;
-      font-size: 28px;
-    }
-
-    .left-panel p {
-      font-size: 14px;
-      opacity: 0.8;
-      max-width: 250px;
-    }
-
-    /* RIGHT PANEL */
-    .right-panel {
+    .right {
       flex: 1.2;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 30px;
+      padding: 40px;
+      background: #f5f6f8;
     }
 
-    .card {
-      width: 100%;
-      max-width: 420px;
+    .box {
       background: white;
-      border-radius: 18px;
-      padding: 30px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+      padding: 25px;
+      border-radius: 15px;
     }
 
-    .card h2 {
-      margin-bottom: 5px;
-    }
-
-    .card p {
-      font-size: 13px;
-      color: #666;
-      margin-bottom: 20px;
-    }
-
-    /* CHECKBOXES */
-    .checkboxes {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      margin-top: 10px;
-    }
-
-    .checkboxes label {
+    .checkbox-item {
       display: flex;
       align-items: center;
       gap: 10px;
       padding: 12px;
-      border: 1px solid #e5e7eb;
+      border: 1px solid #ddd;
       border-radius: 10px;
-      cursor: pointer;
-      transition: 0.2s;
+      margin-bottom: 10px;
     }
 
-    .checkboxes label:hover {
-      background: #f9fafb;
-    }
-
-    /* UPLOAD */
-    .upload-btn {
-      display: block;
-      margin-top: 15px;
-      padding: 12px;
-      background: #111827;
-      color: white;
-      text-align: center;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: 0.3s;
-    }
-
-    .upload-btn:hover {
-      transform: translateY(-2px);
-    }
-
-    .image-name {
-      font-size: 12px;
-      text-align: center;
-      margin-top: 8px;
-      color: #555;
-    }
-
-    /* BUTTONS */
     button {
       width: 100%;
-      padding: 12px;
-      margin-top: 12px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 600;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      transform: translateY(-2px);
-    }
-
-    .submit-btn {
-      background: #702020;
-      color: white;
-    }
-
-    .reset-btn {
-      background: #f59e0b;
-      color: white;
-    }
-
-    .logout {
-      background: transparent;
-      color: #444;
-      font-size: 13px;
-    }
-
-    #msg {
       margin-top: 10px;
-      text-align: center;
-      font-weight: 600;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
     }
 
-    /* MOBILE */
-    @media (max-width: 768px) {
-      body {
-        flex-direction: column;
-      }
-
-      .left-panel {
-        padding: 20px;
-      }
-
-      .right-panel {
-        padding: 20px;
-      }
-    }
+    .submit { background: #702020; color: white; }
+    .reset { background: orange; }
+    .dash { background: #111; color: white; }
   </style>
 </head>
 
 <body>
 
-<!-- LEFT PANEL -->
-<div class="left-panel">
-
+<!-- LEFT -->
+<div class="left">
   <img src="logo.jpeg">
-
-  <h1>TriVi Infracons</h1>
-
-  <p>
-    Smart Attendance System for Field & Office Operations
-  </p>
-
+  <h2>TriVi Infracons</h2>
+  <p>Attendance System</p>
 </div>
 
-<!-- RIGHT PANEL -->
-<div class="right-panel">
+<!-- RIGHT -->
+<div class="right">
 
-  <div class="card">
-
-    <h2>Mark Attendance</h2>
-    <p>Select work type and upload proof</p>
+  <div class="box">
 
     <!-- CHECKBOXES -->
-    <div class="checkboxes">
+    <label class="checkbox-item">
+      <input type="checkbox" name="workTypes" value="Work From Home">
+      Work From Home
+    </label>
 
-      <label><input type="checkbox" name="workTypes" value="Work From Home"> Work From Home</label>
-      <label><input type="checkbox" name="workTypes" value="Office Management"> Office</label>
-      <label><input type="checkbox" name="workTypes" value="Site Visit"> Site Visit</label>
-      <label><input type="checkbox" name="workTypes" value="Leave"> Leave</label>
-      <label><input type="checkbox" name="workTypes" value="Government Holiday"> Govt Holiday</label>
+    <label class="checkbox-item">
+      <input type="checkbox" name="workTypes" value="Office Management">
+      Office
+    </label>
 
-    </div>
+    <label class="checkbox-item">
+      <input type="checkbox" name="workTypes" value="Site Visit">
+      Site Visit
+    </label>
 
-    <!-- IMAGE -->
-    <label for="image" class="upload-btn">Upload Image</label>
-    <input type="file" id="image" accept="image/*" hidden>
+    <label class="checkbox-item">
+      <input type="checkbox" name="workTypes" value="Leave">
+      Leave
+    </label>
 
-    <div class="image-name" id="imageName">No image selected</div>
+    <label class="checkbox-item">
+      <input type="checkbox" name="workTypes" value="Government Holiday">
+      Govt Holiday
+    </label>
 
-    <button class="submit-btn" onclick="submitAttendance()">Submit Attendance</button>
-    <button class="reset-btn" onclick="resetForm()">Reset</button>
+    <!-- BUTTONS -->
+    <button class="submit" onclick="submitAttendance()">Submit</button>
+    <button class="reset" onclick="resetForm()">Reset</button>
 
-    <a href="/auth/logout" style="text-decoration:none;">
-      <button class="logout">Logout</button>
-    </a>
+    <!-- ADMIN ONLY -->
+    <button id="dashboardBtn" class="dash" style="display:none" onclick="goDashboard()">
+      Dashboard
+    </button>
+
+    <button onclick="window.location.href='/auth/logout'">
+      Logout
+    </button>
 
     <p id="msg"></p>
 
@@ -231,19 +128,26 @@
 <script src="app.js"></script>
 
 <script>
-const imageInput = document.getElementById("image");
-const imageName = document.getElementById("imageName");
 
-imageInput.addEventListener("change", () => {
-  imageName.innerText = imageInput.files[0]?.name || "No image selected";
-});
+async function checkAdmin() {
+  const res = await fetch("/api/check-admin", { credentials: "include" });
+  const data = await res.json();
+
+  if (data.isAdmin) {
+    document.getElementById("dashboardBtn").style.display = "block";
+  }
+}
+
+function goDashboard() {
+  window.location.href = "/dashboard";
+}
 
 function resetForm() {
-  document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-  imageInput.value = "";
-  imageName.innerText = "No image selected";
-  document.getElementById("msg").innerText = "";
+  document.querySelectorAll("input[type=checkbox]").forEach(c => c.checked = false);
 }
+
+checkAdmin();
+
 </script>
 
 </body>

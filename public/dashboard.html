@@ -250,66 +250,438 @@
 </div>
 
 <script>
-let allData = [];
 
+let allData = [];
+let editId = null;
+
+// LOAD DATA
 async function loadData() {
-  const res = await fetch("/attendance", { credentials: "include" });
-  allData = await res.json();
-  render(allData);
+
+  try {
+
+    const res = await fetch("/attendance", {
+      credentials: "include"
+    });
+
+    const data = await res.json();
+
+    allData = Array.isArray(data) ? data : [];
+
+    render(allData);
+
+  } catch (err) {
+    console.log(err);
+    alert("Failed to load attendance");
+  }
 }
 
+// RENDER TABLE + STATS
 function render(data) {
-  document.getElementById("tbody").innerHTML = "";
 
-  let stats = { total: data.length, wfh:0, office:0, site:0, leave:0, govt:0 };
+  const tbody = document.getElementById("tbody");
+
+  tbody.innerHTML = "";
+
+  let stats = {
+    total: data.length,
+    wfh: 0,
+    office: 0,
+    site: 0,
+    leave: 0,
+    govt: 0
+  };
 
   data.forEach(item => {
 
+    // STATS
     (item.workTypes || []).forEach(t => {
+
       if (t.includes("Work From Home")) stats.wfh++;
+
       else if (t.includes("Office")) stats.office++;
+
       else if (t.includes("Site")) stats.site++;
+
       else if (t.includes("Leave")) stats.leave++;
+
       else if (t.includes("Government")) stats.govt++;
     });
 
+    // TABLE ROW
     const row = document.createElement("tr");
 
     row.innerHTML = `
       <td>${item.name || ""}</td>
+
       <td>${item.date || ""}</td>
+
+      <td>${item.day || ""}</td>
+
       <td>${item.time || ""}</td>
+
       <td>${(item.workTypes || []).join(", ")}</td>
+
       <td>
-        ${item.imageUrl ? `<img src="${item.imageUrl}" class="image-preview" onclick="openImage('${item.imageUrl}')">` : "No"}
+        ${
+          item.imageUrl
+          ? `
+            <img
+              src="${item.imageUrl}"
+              class="image-preview"
+              onclick="openImage('${item.imageUrl}')"
+            >
+          `
+          : "No Image"
+        }
       </td>
+
       <td>
-        <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
-        <button class="danger" onclick="deleteEntry('${item._id}')">Del</button>
+        <button
+          class="edit"
+          onclick="openEdit('${item._id}')"
+        >
+          Edit
+        </button>
+
+        <button
+          class="danger"
+          onclick="deleteEntry('${item._id}')"
+        >
+          Delete
+        </button>
       </td>
     `;
 
-    document.getElementById("tbody").appendChild(row);
+    tbody.appendChild(row);
   });
 
+  // UPDATE STATS
   document.getElementById("total").innerText = stats.total;
+
   document.getElementById("wfh").innerText = stats.wfh;
+
   document.getElementById("office").innerText = stats.office;
+
   document.getElementById("site").innerText = stats.site;
+
   document.getElementById("leave").innerText = stats.leave;
+
   document.getElementById("govt").innerText = stats.govt;
 }
 
-function openImage(url) {
-  document.getElementById("previewImage").src = url;
-  document.getElementById("imageModal").style.display = "flex";
+// APPLY FILTERS
+function applyFilters() {
+
+  const search =
+    document.getElementById("searchInput")
+    .value
+    .toLowerCase();
+
+  const singleDate =
+    document.getElementById("singleDate").value;
+
+  const fromDate =
+    document.getElementById("fromDate").value;
+
+  const toDate =
+    document.getElementById("toDate").value;
+
+  let filtered = [...allData];
+
+  // SEARCH
+  if (search) {
+
+    filtered = filtered.filter(item =>
+
+      (item.name || "")
+      .toLowerCase()
+      .includes(search)
+
+      ||
+
+      (item.email || "")
+      .toLowerCase()
+      .includes(search)
+    );
+  }
+
+  // DATE FILTER
+  if (fromDate && toDate) {
+
+    // RANGE
+    filtered = filtered.filter(item =>
+
+      item.date >= fromDate
+      &&
+      item.date <= toDate
+    );
+
+  }
+
+  else if (singleDate) {
+
+    // PINPOINT
+    filtered = filtered.filter(item =>
+
+      item.date === singleDate
+    );
+  }
+
+  render(filtered);
 }
 
-document.getElementById("imageModal").onclick = () => {
-  document.getElementById("imageModal").style.display = "none";
-};
+// RESET FILTERS
+function resetFilters() {
 
+  document.getElementById("searchInput").value = "";
+
+  document.getElementById("singleDate").value = "";
+
+  document.getElementById("fromDate").value = "";
+
+  document.getElementById("toDate").value = "";
+
+  render(allData);
+}
+
+// EXPORT EXCEL
+async function exportExcel() {
+
+  const search =
+    document.getElementById("searchInput").value;
+
+  const singleDate =
+    document.getElementById("singleDate").value;
+
+  const fromDate =
+    document.getElementById("fromDate").value;
+
+  const toDate =
+    document.getElementById("toDate").value;
+
+  const params = new URLSearchParams({
+    search,
+    singleDate,
+    fromDate,
+    toDate
+  });
+
+  try {
+
+    const response = await fetch(
+
+      "/attendance/export/excel?" + params.toString(),
+
+      {
+        credentials: "include"
+      }
+    );
+
+    if (!response.ok) {
+
+      alert("Export failed");
+
+      return;
+    }
+
+    const blob = await response.blob();
+
+    const url =
+      window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+
+    a.href = url;
+
+    a.download =
+      `attendance-${Date.now()}.xlsx`;
+
+    document.body.appendChild(a);
+
+    a.click();
+
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+
+  } catch (err) {
+
+    console.log(err);
+
+    alert("Export error");
+  }
+}
+
+// DELETE
+async function deleteEntry(id) {
+
+  const confirmDelete =
+    confirm("Delete this attendance?");
+
+  if (!confirmDelete) return;
+
+  try {
+
+    await fetch("/attendance/" + id, {
+
+      method: "DELETE",
+
+      credentials: "include"
+    });
+
+    loadData();
+
+  } catch (err) {
+
+    console.log(err);
+
+    alert("Delete failed");
+  }
+}
+
+// OPEN EDIT MODAL
+function openEdit(id) {
+
+  editId = id;
+
+  const item =
+    allData.find(x => x._id === id);
+
+  const current =
+    item?.workTypes || [];
+
+  document
+    .querySelectorAll(".checkbox-group input")
+    .forEach(cb => {
+
+      cb.checked =
+        current.includes(cb.value);
+    });
+
+  document
+    .getElementById("editModal")
+    .style.display = "flex";
+}
+
+// SAVE EDIT
+async function saveEdit() {
+
+  const selected = Array.from(
+
+    document.querySelectorAll(
+      ".checkbox-group input:checked"
+    )
+
+  ).map(cb => cb.value);
+
+  if (selected.length === 0) {
+
+    alert("Select at least one option");
+
+    return;
+  }
+
+  if (selected.length > 2) {
+
+    alert("Only 2 selections allowed");
+
+    return;
+  }
+
+  try {
+
+    await fetch("/attendance/" + editId, {
+
+      method: "PUT",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      credentials: "include",
+
+      body: JSON.stringify({
+        workTypes: selected
+      })
+    });
+
+    document
+      .getElementById("editModal")
+      .style.display = "none";
+
+    loadData();
+
+  } catch (err) {
+
+    console.log(err);
+
+    alert("Update failed");
+  }
+}
+
+// RESET MODAL
+function resetModal() {
+
+  document
+    .querySelectorAll(".checkbox-group input")
+    .forEach(cb => cb.checked = false);
+}
+
+// IMAGE MODAL
+function openImage(url) {
+
+  document
+    .getElementById("previewImage")
+    .src = url;
+
+  document
+    .getElementById("imageModal")
+    .style.display = "flex";
+}
+
+// CLOSE MODALS
+document
+.getElementById("imageModal")
+.addEventListener("click", (e) => {
+
+  if (e.target.id === "imageModal") {
+
+    document
+      .getElementById("imageModal")
+      .style.display = "none";
+  }
+});
+
+document
+.getElementById("editModal")
+.addEventListener("click", (e) => {
+
+  if (e.target.id === "editModal") {
+
+    document
+      .getElementById("editModal")
+      .style.display = "none";
+  }
+});
+
+// GLOBAL BUTTON BINDING
+window.applyFilters = applyFilters;
+
+window.resetFilters = resetFilters;
+
+window.exportExcel = exportExcel;
+
+window.deleteEntry = deleteEntry;
+
+window.openEdit = openEdit;
+
+window.saveEdit = saveEdit;
+
+window.resetModal = resetModal;
+
+// INITIAL LOAD
 loadData();
+
 </script>
 
 </body>
