@@ -209,7 +209,8 @@ else if (singleDate) {
       { header: "Date", key: "date", width: 15 },
       { header: "Day", key: "day", width: 15 },
       { header: "Time", key: "time", width: 15 },
-      { header: "Work Type", key: "workTypes", width: 40 }
+      { header: "Work Type", key: "workTypes", width: 40 },
+      { header: "Image", key: "image", width: 30 }
     ];
 
     // HEADER STYLE
@@ -223,14 +224,45 @@ else if (singleDate) {
     };
 
     records.forEach(item => {
-      worksheet.addRow({
-        name: item.name || "",
-        email: item.email || "",
-        date: item.date || "",
-        day: item.day || "",
-        time: item.time || "",
-        workTypes: (item.workTypes || []).join(", ")
-      });
+      const row = worksheet.addRow({
+
+  name: item.name || "",
+
+  email: item.email || "",
+
+  date: item.date || "",
+
+  day: item.day || "",
+
+  time: item.time || "",
+
+  workTypes: (item.workTypes || []).join(", "),
+
+  image: item.imageUrl
+    ? "View Image"
+    : "No Image"
+});
+
+// CLICKABLE IMAGE LINK
+if (item.imageUrl) {
+
+  const imageCell =
+    row.getCell("image");
+
+  imageCell.value = {
+
+    text: "View Image",
+
+    hyperlink: item.imageUrl
+  };
+
+  imageCell.font = {
+
+    color: { argb: "FF0000FF" },
+
+    underline: true
+  };
+}
     });
 
     // CENTER ALIGN
