@@ -1,77 +1,115 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Attendance Dashboard</title>
+  <title>Dashboard - TriVi Infracons</title>
   <link rel="stylesheet" href="style.css">
 
   <style>
     body {
-      font-family: Arial;
+      margin: 0;
+      font-family: Arial, sans-serif;
       background: #f4f6f8;
-      padding: 30px;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: auto;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .controls {
       display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
     }
 
-    .control-group {
+    /* SIDEBAR */
+    .sidebar {
+      width: 240px;
+      background: #0b1f3a;
+      color: white;
+      height: 100vh;
       display: flex;
       flex-direction: column;
-      font-size: 12px;
+      padding: 20px;
+      position: fixed;
     }
 
-    input, button {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
+    .sidebar h2 {
+      margin-bottom: 30px;
     }
 
-    button {
-      background: black;
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .nav a {
+      color: white;
+      text-decoration: none;
+      padding: 10px;
+      border-radius: 8px;
+      transition: 0.2s;
+      font-size: 14px;
+    }
+
+    .nav a:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .logout {
+      background: #702020;
+      text-align: center;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: auto;
+    }
+
+    /* MAIN */
+    .main {
+      margin-left: 240px;
+      padding: 20px;
+      width: 100%;
+    }
+
+    /* TOP BAR */
+    .topbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+
+    .topbar input,
+    .topbar button {
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .topbar button {
+      background: #111827;
       color: white;
       cursor: pointer;
       border: none;
     }
 
-    .danger { background: red; }
-    .edit { background: #007bff; }
-
+    /* STATS */
     .stats {
-      display: flex;
-      justify-content: space-around;
-      background: white;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
       margin-bottom: 20px;
-      flex-wrap: wrap;
-      gap: 10px;
     }
 
     .card {
       background: white;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #ccc;
-      padding: 20px;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+      text-align: center;
+      font-weight: bold;
+    }
+
+    /* TABLE */
+    .table-card {
+      background: white;
+      padding: 15px;
+      border-radius: 12px;
+      box-shadow: 0 10px 20px rgba(0,0,0,0.05);
       overflow-x: auto;
     }
 
@@ -81,126 +119,117 @@
     }
 
     th, td {
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       border-bottom: 1px solid #eee;
+      font-size: 14px;
     }
 
     th {
-      background: black;
+      background: #111827;
       color: white;
     }
 
-    /* ===== MODAL ===== */
+    tr:hover {
+      background: #f9fafb;
+    }
+
+    .edit {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .danger {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .image-preview {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    /* MODAL */
     .modal {
       display: none;
       position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.6);
-      justify-content: center;
-      align-items: center;
+      top:0;
+      left:0;
+      width:100%;
+      height:100%;
+      background: rgba(0,0,0,0.5);
+      justify-content:center;
+      align-items:center;
     }
 
     .modal-content {
       background: white;
       padding: 20px;
-      border-radius: 10px;
+      border-radius: 12px;
       width: 300px;
     }
-
-    .modal-content h3 {
-      margin-bottom: 10px;
-    }
-
-    .checkbox-group {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin: 10px 0;
-    }
-
-    .modal-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
-
-.reset {
-  background: orange;
-}
-
-.image-preview {
-  width: 50px;
-  height: 50px;
-  object-fit: cover;
-  border-radius: 8px;
-  cursor: pointer;
-  border: 2px solid #ddd;
-}
-
-.image-modal-img {
-  max-width: 90vw;
-  max-height: 85vh;
-  border-radius: 12px;
-}
-  
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <h2>TriVi</h2>
 
-  <h2>📊 Attendance Dashboard</h2>
+  <div class="nav">
+    <a href="/dashboard">📊 Dashboard</a>
+    <a href="/">📅 Attendance</a>
+    <a href="#" onclick="exportExcel()">📤 Export</a>
+  </div>
 
-  <!-- CONTROLS -->
-  <div class="controls">
-    <div class="control-group">
-      <label>Search</label>
-      <input type="text" id="searchInput">
-    </div>
+  <div class="logout" onclick="window.location.href='/auth/logout'">
+    Logout
+  </div>
+</div>
 
-    <div class="control-group">
-      <label>Single Date</label>
-      <input type="date" id="singleDate">
-    </div>
+<!-- MAIN -->
+<div class="main">
 
-    <div class="control-group">
-      <label>From</label>
-      <input type="date" id="fromDate">
-    </div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <input type="text" id="searchInput" placeholder="Search">
+    <input type="date" id="singleDate">
+    <input type="date" id="fromDate">
+    <input type="date" id="toDate">
 
-    <div class="control-group">
-      <label>To</label>
-      <input type="date" id="toDate">
-    </div>
-
-    <button onclick="loadData()">Load</button>
     <button onclick="applyFilters()">Apply</button>
     <button onclick="resetFilters()">Reset</button>
-    <button onclick="exportExcel()">Excel Export</button>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div>Total: <span id="total">0</span></div>
-    <div>WFH: <span id="wfh">0</span></div>
-    <div>Office: <span id="office">0</span></div>
-    <div>Site: <span id="site">0</span></div>
-    <div>Leave: <span id="leave">0</span></div>
-    <div>Govt: <span id="govt">0</span></div>
+    <div class="card">Total <div id="total">0</div></div>
+    <div class="card">WFH <div id="wfh">0</div></div>
+    <div class="card">Office <div id="office">0</div></div>
+    <div class="card">Site <div id="site">0</div></div>
+    <div class="card">Leave <div id="leave">0</div></div>
+    <div class="card">Govt <div id="govt">0</div></div>
   </div>
 
   <!-- TABLE -->
-  <div class="card">
+  <div class="table-card">
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Date</th>
-          <th>Day</th>
           <th>Time</th>
           <th>Work Type</th>
           <th>Image</th>
@@ -210,226 +239,65 @@
       <tbody id="tbody"></tbody>
     </table>
   </div>
+
 </div>
 
-<!-- ===== EDIT MODAL ===== -->
-<div class="modal" id="editModal">
-  <div class="modal-content">
-    <h3>Edit Work Type</h3>
-
-    <div class="checkbox-group">
-      <label><input type="checkbox" value="Work From Home"> Work From Home</label>
-      <label><input type="checkbox" value="Office Management"> Office Management</label>
-      <label><input type="checkbox" value="Site Visit"> Site Visit</label>
-      <label><input type="checkbox" value="Leave"> Leave</label>
-      <label><input type="checkbox" value="Government Holiday"> Government Holiday</label>
-    </div>
-
-    <div class="modal-buttons">
-      <button class="reset" onclick="resetModal()">Reset</button>
-      <button onclick="saveEdit()">Save</button>
-    </div>
-  </div>
-</div>
-
-<!-- IMAGE PREVIEW MODAL -->
+<!-- IMAGE MODAL -->
 <div class="modal" id="imageModal">
-  <div class="modal-content" style="width:auto; background:transparent; box-shadow:none;">
-    <img id="previewImage" class="image-modal-img">
+  <div class="modal-content">
+    <img id="previewImage" style="width:100%; border-radius:10px;">
   </div>
 </div>
 
 <script>
-
 let allData = [];
-let editId = null;
 
-// LOAD
 async function loadData() {
   const res = await fetch("/attendance", { credentials: "include" });
-  const data = await res.json();
-
-  allData = Array.isArray(data) ? data : [];
-  applyFilters();
+  allData = await res.json();
+  render(allData);
 }
 
-// FILTER
-function applyFilters() {
-  const search = document.getElementById("searchInput").value.toLowerCase();
-  const singleDate = document.getElementById("singleDate").value;
-  const fromDate = document.getElementById("fromDate").value;
-  const toDate = document.getElementById("toDate").value;
-
-  let filtered = [...allData];
-
-  if (search) {
-    filtered = filtered.filter(i =>
-      (i.name || "").toLowerCase().includes(search) ||
-      (i.email || "").toLowerCase().includes(search)
-    );
-  }
-
-  if (fromDate && toDate) {
-    filtered = filtered.filter(i => i.date >= fromDate && i.date <= toDate);
-  } else if (singleDate) {
-    filtered = filtered.filter(i => i.date === singleDate);
-  }
-
-  render(filtered);
-}
-
-function resetFilters() {
-  document.getElementById("searchInput").value = "";
-  document.getElementById("singleDate").value = "";
-  document.getElementById("fromDate").value = "";
-  document.getElementById("toDate").value = "";
-
-  applyFilters();
-}
-
-async function exportExcel() {
-
-  const search = document.getElementById("searchInput").value;
-  const singleDate = document.getElementById("singleDate").value;
-  const fromDate = document.getElementById("fromDate").value;
-  const toDate = document.getElementById("toDate").value;
-
-  const params = new URLSearchParams({
-    search,
-    singleDate,
-    fromDate,
-    toDate
-  });
-
-  try {
-
-    const response = await fetch(
-      "/attendance/export/excel?" + params.toString(),
-      {
-        credentials: "include"
-      }
-    );
-
-    if (!response.ok) {
-      alert("Export failed");
-      return;
-    }
-
-    const blob = await response.blob();
-
-    const url = window.URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-
-    a.href = url;
-
-    a.download = `attendance-${Date.now()}.xlsx`;
-
-    document.body.appendChild(a);
-
-    a.click();
-
-    a.remove();
-
-    window.URL.revokeObjectURL(url);
-
-  } catch (err) {
-    console.log(err);
-    alert("Export error");
-  }
-}
-
-// STATS
-function updateStats(data) {
-  let c = { total: data.length, wfh:0, office:0, site:0, leave:0, govt:0 };
-
-  data.forEach(i => {
-    (i.workTypes || []).forEach(t => {
-      t = t.toLowerCase();
-      if (t.includes("work from home")) c.wfh++;
-      else if (t.includes("office")) c.office++;
-      else if (t.includes("site")) c.site++;
-      else if (t.includes("leave")) c.leave++;
-      else if (t.includes("government")) c.govt++;
-    });
-  });
-
-  document.getElementById("total").innerText = c.total;
-  document.getElementById("wfh").innerText = c.wfh;
-  document.getElementById("office").innerText = c.office;
-  document.getElementById("site").innerText = c.site;
-  document.getElementById("leave").innerText = c.leave;
-  document.getElementById("govt").innerText = c.govt;
-}
-
-// TABLE
 function render(data) {
-  updateStats(data);
+  document.getElementById("tbody").innerHTML = "";
 
-  const tbody = document.getElementById("tbody");
-  tbody.innerHTML = "";
+  let stats = { total: data.length, wfh:0, office:0, site:0, leave:0, govt:0 };
 
   data.forEach(item => {
+
+    (item.workTypes || []).forEach(t => {
+      if (t.includes("Work From Home")) stats.wfh++;
+      else if (t.includes("Office")) stats.office++;
+      else if (t.includes("Site")) stats.site++;
+      else if (t.includes("Leave")) stats.leave++;
+      else if (t.includes("Government")) stats.govt++;
+    });
+
     const row = document.createElement("tr");
 
     row.innerHTML = `
-  <td>${item.name || ""}</td>
-  <td>${item.date || ""}</td>
-  <td>${item.day || ""}</td>
-  <td>${item.time || ""}</td>
-  <td>${(item.workTypes || []).join(", ")}</td>
+      <td>${item.name || ""}</td>
+      <td>${item.date || ""}</td>
+      <td>${item.time || ""}</td>
+      <td>${(item.workTypes || []).join(", ")}</td>
+      <td>
+        ${item.imageUrl ? `<img src="${item.imageUrl}" class="image-preview" onclick="openImage('${item.imageUrl}')">` : "No"}
+      </td>
+      <td>
+        <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
+        <button class="danger" onclick="deleteEntry('${item._id}')">Del</button>
+      </td>
+    `;
 
-  <td>
-    ${
-      item.imageUrl
-      ? `<img
-          src="${item.imageUrl}"
-          class="image-preview"
-          onclick="openImage('${item.imageUrl}')"
-        >`
-      : "No Image"
-    }
-  </td>
-
-  <td>
-    <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
-    <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
-  </td>
-`;
-
-    tbody.appendChild(row);
-  });
-}
-
-// DELETE
-async function deleteEntry(id) {
-  if (!confirm("Delete?")) return;
-
-  await fetch("/attendance/" + id, {
-    method: "DELETE",
-    credentials: "include"
+    document.getElementById("tbody").appendChild(row);
   });
 
-  loadData();
-}
-
-// OPEN EDIT
-function openEdit(id) {
-  editId = id;
-
-  const item = allData.find(x => x._id === id);
-  const current = item?.workTypes || [];
-
-  document.querySelectorAll(".checkbox-group input").forEach(cb => {
-    cb.checked = current.includes(cb.value);
-  });
-
-  document.getElementById("editModal").style.display = "flex";
-}
-
-// RESET
-function resetModal() {
-  document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
+  document.getElementById("total").innerText = stats.total;
+  document.getElementById("wfh").innerText = stats.wfh;
+  document.getElementById("office").innerText = stats.office;
+  document.getElementById("site").innerText = stats.site;
+  document.getElementById("leave").innerText = stats.leave;
+  document.getElementById("govt").innerText = stats.govt;
 }
 
 function openImage(url) {
@@ -437,46 +305,11 @@ function openImage(url) {
   document.getElementById("imageModal").style.display = "flex";
 }
 
-// SAVE EDIT
-async function saveEdit() {
-  const selected = Array.from(document.querySelectorAll(".checkbox-group input:checked"))
-    .map(cb => cb.value);
+document.getElementById("imageModal").onclick = () => {
+  document.getElementById("imageModal").style.display = "none";
+};
 
-    if (selected.length === 0) {
-      alert("Select at least one option");
-      return;
-    }
-
-
-    if (selected.length > 2) {
-      alert("only 2 options allowed");
-      return;
-    }
-
-  await fetch("/attendance/" + editId, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ workTypes: selected })
-  });
-
-  document.getElementById("editModal").style.display = "none";
-  loadData();
-}
-
-// CLOSE MODAL ON OUTSIDE CLICK
-document.getElementById("editModal").addEventListener("click", (e) => {
-  if (e.target.id === "editModal") {
-    document.getElementById("editModal").style.display = "none";
-  }
-});
-
-document.getElementById("imageModal").addEventListener("click", (e) => {
-  if (e.target.id === "imageModal") {
-    document.getElementById("imageModal").style.display = "none";
-  }
-});
-
+loadData();
 </script>
 
 </body>

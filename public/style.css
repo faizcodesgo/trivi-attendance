@@ -1,178 +1,154 @@
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+/* =========================
+   GLOBAL RESET
+========================= */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: Arial, sans-serif;
 }
 
-body{
-  min-height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background: linear-gradient(135deg,#071c3a,#0d3d75);
-  padding:20px;
+body {
+  background: #f4f6f8;
+  color: #111827;
 }
 
-.container{
-  width:100%;
-  max-width:450px;
+/* =========================
+   GLOBAL BUTTONS
+========================= */
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-weight: 600;
+  transition: 0.25s;
 }
 
-.card{
-  background:white;
-  border-radius:22px;
-  padding:35px;
-  box-shadow:0 20px 40px rgba(0,0,0,0.25);
+button:hover {
+  transform: translateY(-2px);
 }
 
-/* HEADER */
-
-.header{
-  text-align:center;
+/* Primary button */
+.btn-primary {
+  background: #111827;
+  color: white;
 }
 
-.logo{
-  width:110px;
-  height:110px;
-  object-fit:cover;
-  border-radius:50%;
-  margin-bottom:18px;
-  border:4px solid #f3f4f6;
+/* Danger */
+.btn-danger {
+  background: #dc2626;
+  color: white;
 }
 
-.header h2{
-  font-size:34px;
-  color:#111827;
-  margin-bottom:10px;
+/* Success / Maroon theme */
+.btn-maroon {
+  background: #702020;
+  color: white;
 }
 
-.header p{
-  color:#6b7280;
-  margin-bottom:22px;
-  font-size:15px;
+/* =========================
+   CARDS (SaaS style)
+========================= */
+.card {
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+  padding: 20px;
 }
 
-/* DASHBOARD BUTTON */
-
-#dashboardBtn{
-  background:#2563eb;
-  margin-bottom:10px;
+/* =========================
+   INPUTS
+========================= */
+input, select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  outline: none;
+  width: 100%;
 }
 
-/* CHECKBOXES */
-
-.checkboxes{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-top:18px;
+input:focus {
+  border-color: #2563eb;
 }
 
-.checkboxes label{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding:14px;
-  border:1px solid #e5e7eb;
-  border-radius:12px;
-  transition:0.2s;
-  cursor:pointer;
-  font-size:15px;
+/* =========================
+   TABLE BASE STYLE
+========================= */
+table {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.checkboxes label:hover{
-  background:#f9fafb;
+th, td {
+  padding: 12px;
+  border-bottom: 1px solid #eee;
+  text-align: center;
 }
 
-.checkboxes input[type="checkbox"]{
-  width:18px;
-  height:18px;
+th {
+  background: #111827;
+  color: white;
 }
 
-/* BUTTONS */
-
-button,
-.upload-btn{
-  width:100%;
-  padding:14px;
-  border:none;
-  border-radius:12px;
-  cursor:pointer;
-  margin-top:14px;
-  font-size:15px;
-  font-weight:600;
-  transition:0.3s;
+/* =========================
+   MODALS (GLOBAL)
+========================= */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
 }
 
-button{
-  background:#111827;
-  color:white;
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 14px;
+  min-width: 280px;
 }
 
-button:hover{
-  background:#1f2937;
-  transform:translateY(-2px);
+/* =========================
+   IMAGE PREVIEW
+========================= */
+.image-preview {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
 }
 
-.upload-btn{
-  background:#0f172a;
-  color:white;
-  text-align:center;
-  display:block;
+/* =========================
+   UTILITIES
+========================= */
+.text-center {
+  text-align: center;
 }
 
-.upload-btn:hover{
-  background:#1e293b;
+.flex {
+  display: flex;
 }
 
-.reset-btn{
-  background:#f59e0b !important;
+.gap-10 {
+  gap: 10px;
 }
 
-.reset-btn:hover{
-  background:#d97706 !important;
-}
-
-/* IMAGE NAME */
-
-.image-name{
-  margin-top:10px;
-  text-align:center;
-  color:#555;
-  font-size:14px;
-}
-
-/* LOADING */
-
-.loading-box{
-  margin-top:12px;
-  background:#eff6ff;
-  color:#2563eb;
-  padding:12px;
-  border-radius:10px;
-  text-align:center;
-  font-weight:600;
-}
-
-/* MESSAGE */
-
-#msg{
-  margin-top:15px;
-  text-align:center;
-  font-weight:600;
-}
-
-/* MOBILE */
-
-@media(max-width:500px){
-
-  .card{
-    padding:25px;
+/* =========================
+   RESPONSIVE BASE
+========================= */
+@media (max-width: 768px) {
+  .card {
+    padding: 15px;
   }
 
-  .header h2{
-    font-size:28px;
+  th, td {
+    font-size: 12px;
   }
-
 }
