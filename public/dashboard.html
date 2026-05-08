@@ -247,17 +247,6 @@
 <!-- MAIN -->
 <div class="main">
 
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <input type="text" id="searchInput" placeholder="Search">
-    <input type="date" id="singleDate">
-    <input type="date" id="fromDate">
-    <input type="date" id="toDate">
-
-    <button onclick="applyFilters()">Apply</button>
-    <button onclick="resetFilters()">Reset</button>
-  </div>
-
   <!-- STATS -->
   <div class="stats">
     <div class="card">Total <div id="total">0</div></div>
@@ -292,6 +281,58 @@
   <div class="modal-content">
     <img id="previewImage" style="width:100%; border-radius:10px;">
   </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal" id="editModal">
+
+  <div class="modal-content">
+
+    <h3>Edit Work Type</h3>
+
+    <div class="checkbox-group">
+
+      <label>
+        <input type="checkbox" value="Work From Home">
+        Work From Home
+      </label>
+
+      <label>
+        <input type="checkbox" value="Office Management">
+        Office Management
+      </label>
+
+      <label>
+        <input type="checkbox" value="Site Visit">
+        Site Visit
+      </label>
+
+      <label>
+        <input type="checkbox" value="Leave">
+        Leave
+      </label>
+
+      <label>
+        <input type="checkbox" value="Government Holiday">
+        Government Holiday
+      </label>
+
+    </div>
+
+    <div style="margin-top:15px; display:flex; gap:10px;">
+
+      <button onclick="resetModal()">
+        Reset
+      </button>
+
+      <button onclick="saveEdit()">
+        Save
+      </button>
+
+    </div>
+
+  </div>
+
 </div>
 
 <script>

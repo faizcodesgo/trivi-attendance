@@ -50,9 +50,16 @@ async function submitAttendance() {
       "Submitting...";
   }
 
-  if (loadingBox) {
-    loadingBox.style.display = "block";
-  }
+  if (
+  loadingBox
+  &&
+  imageInput
+  &&
+  imageInput.files[0]
+) {
+
+  loadingBox.style.display = "block";
+}
 
   // FORM DATA
   const formData = new FormData();
