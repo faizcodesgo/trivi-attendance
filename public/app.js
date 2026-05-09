@@ -16,15 +16,12 @@ async function submitAttendance() {
   const imageInput =
     document.getElementById("image");
 
-  // CLEAR OLD MESSAGE
   msg.innerText = "";
 
-  // GET CHECKED OPTIONS
   const checked = document.querySelectorAll(
     'input[name="workTypes"]:checked'
   );
 
-  // VALIDATION
   if (checked.length === 0) {
 
     msg.innerText =
@@ -41,7 +38,6 @@ async function submitAttendance() {
     return;
   }
 
-  // LOADING UI
   if (submitBtn) {
 
     submitBtn.disabled = true;
@@ -51,20 +47,17 @@ async function submitAttendance() {
   }
 
   if (
-  loadingBox
-  &&
-  imageInput
-  &&
-  imageInput.files[0]
-) {
+    loadingBox &&
+    imageInput &&
+    imageInput.files[0]
+  ) {
 
-  loadingBox.style.display = "block";
-}
+    loadingBox.style.display =
+      "block";
+  }
 
-  // FORM DATA
   const formData = new FormData();
 
-  // IMAGE
   if (imageInput && imageInput.files[0]) {
 
     formData.append(
@@ -73,7 +66,6 @@ async function submitAttendance() {
     );
   }
 
-  // WORK TYPES
   checked.forEach(cb => {
 
     formData.append(
@@ -84,7 +76,6 @@ async function submitAttendance() {
 
   try {
 
-    // API CALL
     const res = await fetch("/attendance", {
 
       method: "POST",
@@ -96,7 +87,6 @@ async function submitAttendance() {
 
     const data = await res.json();
 
-    // FAILED
     if (!res.ok) {
 
       msg.innerText =
@@ -105,18 +95,15 @@ async function submitAttendance() {
       return;
     }
 
-    // SUCCESS
     msg.innerText =
       "Attendance submitted successfully";
 
-    // RESET CHECKBOXES
     document
       .querySelectorAll(
         'input[name="workTypes"]'
       )
       .forEach(cb => cb.checked = false);
 
-    // RESET IMAGE
     if (imageInput) {
 
       imageInput.value = "";
@@ -140,7 +127,6 @@ async function submitAttendance() {
 
   } finally {
 
-    // REMOVE LOADING
     if (submitBtn) {
 
       submitBtn.disabled = false;
@@ -158,7 +144,7 @@ async function submitAttendance() {
 }
 
 // =========================
-// STRICT 2 OPTION LIMIT
+// STRICT LIMIT
 // =========================
 
 document
@@ -186,7 +172,7 @@ document
 });
 
 // =========================
-// IMAGE NAME PREVIEW
+// IMAGE PREVIEW
 // =========================
 
 const imageInput =
@@ -217,32 +203,28 @@ if (imageInput && imageName) {
 }
 
 // =========================
-// RESET FORM
+// RESET
 // =========================
 
 function resetForm() {
 
-  // RESET CHECKBOXES
   document
     .querySelectorAll(
       'input[name="workTypes"]'
     )
     .forEach(cb => cb.checked = false);
 
-  // RESET IMAGE
   if (imageInput) {
 
     imageInput.value = "";
   }
 
-  // RESET IMAGE TEXT
   if (imageName) {
 
     imageName.innerText =
       "No image selected";
   }
 
-  // RESET MESSAGE
   const msg =
     document.getElementById("msg");
 
@@ -269,7 +251,6 @@ async function checkAdmin() {
 
     const data = await res.json();
 
-    // SHOW ONLY FOR ADMINS
     if (data.isAdmin === true) {
 
       const btn =
@@ -293,7 +274,7 @@ async function checkAdmin() {
 }
 
 // =========================
-// OPEN DASHBOARD
+// DASHBOARD
 // =========================
 
 function goDashboard() {
@@ -307,3 +288,69 @@ function goDashboard() {
 // =========================
 
 checkAdmin();
+
+// SERVICE WORKER
+if ("serviceWorker" in navigator) {
+
+  navigator.serviceWorker
+    .register("/sw.js")
+    .then(() => {
+
+      console.log(
+        "Service Worker Registered"
+      );
+
+    });
+
+}
+
+// SUBSCRIBE USER
+async function subscribeUser() {
+
+  const registration =
+    await navigator.serviceWorker.ready;
+
+  const subscription =
+    await registration.pushManager.subscribe({
+
+      userVisibleOnly: true,
+
+      applicationServerKey:
+      "BCsi5sR7zmcjrTUTiYH0Z4-GrrE2yH0rMjwb1rpEcepUeOLwMJG4Qc7MBnu_tnqU6o4jWnDIllDZ9s6ngB3WVhc"
+
+    });
+
+  await fetch("/subscribe", {
+
+    method: "POST",
+
+    headers: {
+      "Content-Type":
+        "application/json"
+    },
+
+    body:
+      JSON.stringify(subscription)
+
+  });
+
+}
+
+// ASK PERMISSION
+if ("Notification" in window) {
+
+  Notification
+    .requestPermission()
+    .then(permission => {
+
+      if (
+        permission === "granted"
+      ) {
+
+        subscribeUser();
+
+      }
+
+    });
+
+}
