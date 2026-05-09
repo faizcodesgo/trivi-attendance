@@ -342,7 +342,7 @@ tr:hover{
 
   cursor:pointer;
 
-  color:black;
+  color:white;
 
   font-weight:600;
 
@@ -793,13 +793,27 @@ tr:hover{
 
     <div style="margin-top:15px; display:flex; gap:10px;">
 
-      <button onclick="resetModal()">
-        Reset
-      </button>
+      <button
+  onclick="resetModal()"
+  style="
+    background:#2563eb;
+    color:white;
+    font-weight:600;
+  "
+>
+  Reset
+</button>
 
-      <button onclick="saveEdit()">
-        Save
-      </button>
+<button
+  onclick="saveEdit()"
+  style="
+    background:#dc2626;
+    color:white;
+    font-weight:600;
+  "
+>
+  Save
+</button>
 
     </div>
 
