@@ -316,7 +316,7 @@ async function subscribeUser() {
       userVisibleOnly: true,
 
       applicationServerKey:
-      "BCsi5sR7zmcjrTUTiYH0Z4-GrrE2yH0rMjwb1rpEcepUeOLwMJG4Qc7MBnu_tnqU6o4jWnDIllDZ9s6ngB3WVhc"
+      "BPtwROFKy9Rq-Qm8InlFphIJYPZxwfrViN8HWj3wPwXYQ2n_HFA3w186rrHglumFXxyWxgkQo6lr-C3f_loeAcE"
 
     });
 

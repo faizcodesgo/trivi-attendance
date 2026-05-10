@@ -22,16 +22,13 @@ connectDB();
 
 /* ---------------- PUSH SETUP ---------------- */
 
-const vapidKeys = webpush.generateVAPIDKeys();
-
-console.log("PUBLIC KEY:", vapidKeys.publicKey);
-
 webpush.setVapidDetails(
   "mailto:admin@trivi.com",
-  vapidKeys.publicKey,
-  vapidKeys.privateKey
-);
 
+  "BPtwROFKy9Rq-Qm8InlFphIJYPZxwfrViN8HWj3wPwXYQ2n_HFA3w186rrHglumFXxyWxgkQo6lr-C3f_loeAcE",
+
+  "XrLEIOSEQLth78oz_JdQtssQ5Y2jkcf2eaaonwFqtP4"
+);
 let subscriptions = [];
 
 /* ---------------- MIDDLEWARE ---------------- */
