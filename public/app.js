@@ -289,7 +289,43 @@ function goDashboard() {
 
 checkAdmin();
 
-// SERVICE WORKER
+/* =========================
+   PUSH NOTIFICATIONS
+========================= */
+
+function urlBase64ToUint8Array(base64String) {
+
+  const padding =
+    "=".repeat(
+      (4 - base64String.length % 4) % 4
+    );
+
+  const base64 =
+    (base64String + padding)
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+  const rawData =
+    window.atob(base64);
+
+  const outputArray =
+    new Uint8Array(
+      rawData.length
+    );
+
+  for (
+    let i = 0;
+    i < rawData.length;
+    ++i
+  ) {
+    outputArray[i] =
+      rawData.charCodeAt(i);
+  }
+
+  return outputArray;
+}
+
+// REGISTER SERVICE WORKER
 if ("serviceWorker" in navigator) {
 
   navigator.serviceWorker
@@ -299,6 +335,8 @@ if ("serviceWorker" in navigator) {
       console.log(
         "Service Worker Registered"
       );
+
+      subscribeUser();
 
     });
 
@@ -316,7 +354,9 @@ async function subscribeUser() {
       userVisibleOnly: true,
 
       applicationServerKey:
-      "BPtwROFKy9Rq-Qm8InlFphIJYPZxwfrViN8HWj3wPwXYQ2n_HFA3w186rrHglumFXxyWxgkQo6lr-C3f_loeAcE"
+        urlBase64ToUint8Array(
+          "BPtwROFKy9Rq-Qm8InlFphIJYPZxwfrViN8HWj3wPwXYQ2n_HFA3w186rrHglumFXxyWxgkQo6lr-C3f_loeAcE"
+        )
 
     });
 
@@ -334,6 +374,8 @@ async function subscribeUser() {
 
   });
 
+  console.log("Subscribed");
+
 }
 
 // ASK PERMISSION
@@ -344,10 +386,12 @@ if ("Notification" in window) {
     .then(permission => {
 
       if (
-        permission === "granted"
+        permission !== "granted"
       ) {
 
-        subscribeUser();
+        console.log(
+          "Permission denied"
+        );
 
       }
 
