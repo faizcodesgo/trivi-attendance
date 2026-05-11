@@ -181,7 +181,7 @@ app.post("/subscribe", (req, res) => {
 
 /* ---------------- DAILY 10AM REMINDER ---------------- */
 
-cron.schedule("0 10 * * *", async () => {
+cron.schedule("*/2 * * * *", async () => {
 
   const payload = JSON.stringify({
     title: "TriVi Attendance Reminder",
