@@ -21,7 +21,7 @@ self.addEventListener("push", event => {
         body: data.body,
         icon: "/logo.jpeg",
         badge: "/logo.jpeg",
-        badge: "/logo.jpeg",
+        vibrate: [200, 100, 200],
         requireInteraction: true
       }
     )
