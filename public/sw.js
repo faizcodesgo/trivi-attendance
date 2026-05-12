@@ -6,6 +6,10 @@ self.addEventListener("activate", event => {
   event.waitUntil(self.clients.claim());
 });
 
+self.addEventListener("fetch", event => {
+  event.respondWith(fetch(event.request));
+});
+
 self.addEventListener("push", event => {
 
   const data = event.data.json();
@@ -17,7 +21,7 @@ self.addEventListener("push", event => {
         body: data.body,
         icon: "/logo.jpeg",
         badge: "/logo.jpeg",
-        vibrate: [200, 100, 200],
+        badge: "/logo.jpeg",
         requireInteraction: true
       }
     )
