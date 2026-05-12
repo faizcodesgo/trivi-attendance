@@ -181,7 +181,7 @@ app.post("/subscribe", (req, res) => {
 
 /* ---------------- DAILY 10AM REMINDER ---------------- */
 
-cron.schedule("* * * * *", async () => {
+cron.schedule("0 10 * * *", async () => {
 
   const payload = JSON.stringify({
     title: "TriVi Attendance Reminder",
@@ -200,6 +200,28 @@ cron.schedule("* * * * *", async () => {
     }
 
   }
+
+});
+
+app.get("/send-reminder", async (req, res) => {
+
+  const payload = JSON.stringify({
+    title: "TriVi Attendance Reminder",
+    body: "Please mark today's attendance."
+  });
+
+  for (const sub of subscriptions) {
+    try {
+      await webpush.sendNotification(
+        sub,
+        payload
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  res.send("Reminder sent");
 
 });
 
