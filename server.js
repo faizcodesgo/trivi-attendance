@@ -229,6 +229,27 @@ app.get("/send-reminder", async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
+/* ---------------- MANUAL REMINDER ROUTE ---------------- */
+
+app.get("/send-reminder", async (req, res) => {
+
+  const payload = JSON.stringify({
+    title: "TriVi Attendance Reminder",
+    body: "Please mark today's attendance."
+  });
+
+  for (const sub of subscriptions) {
+    try {
+      await webpush.sendNotification(sub, payload);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  res.send("Reminder sent");
+
+});
+
 app.listen(PORT, () => {
   console.log("🚀 Server running");
 });
