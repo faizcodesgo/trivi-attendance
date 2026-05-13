@@ -173,7 +173,13 @@ app.get("/api/check-admin", ensureAuth, (req, res) => {
 
 app.post("/subscribe", (req, res) => {
 
-  subscriptions.push(req.body);
+  const exists = subscriptions.find(
+    sub => sub.endpoint === req.body.endpoint
+  );
+
+  if (!exists) {
+    subscriptions.push(req.body);
+  }
 
   res.status(201).json({});
 
