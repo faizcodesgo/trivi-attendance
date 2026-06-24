@@ -208,80 +208,85 @@ else if (singleDate) {
 }
 
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Attendance");
+    workbook.creator = "TriVi Infracons";
 
-    worksheet.columns = [
-      { header: "Name", key: "name", width: 25 },
-      { header: "Email", key: "email", width: 35 },
-      { header: "Date", key: "date", width: 15 },
-      { header: "Day", key: "day", width: 15 },
-      { header: "Time", key: "time", width: 15 },
-      { header: "Work Type", key: "workTypes", width: 40 },
-      { header: "Image", key: "image", width: 30 }
-    ];
-
-    // HEADER STYLE
-    worksheet.getRow(1).font = {
-      bold: true
-    };
-
-    worksheet.getRow(1).alignment = {
-      vertical: "middle",
-      horizontal: "center"
-    };
-
-    records.forEach(item => {
-      const row = worksheet.addRow({
-
-  name: item.name || "",
-
-  email: item.email || "",
-
-  date: item.date || "",
-
-  day: item.day || "",
-
-  time: item.time || "",
-
-  workTypes: (item.workTypes || []).join(", "),
-
-  image: item.imageUrl
-    ? "View Image"
-    : "No Image"
-});
-
-// CLICKABLE IMAGE LINK
-if (item.imageUrl) {
-
-  const imageCell =
-    row.getCell("image");
-
-  imageCell.value = {
-
-    text: "View Image",
-
-    hyperlink: item.imageUrl
-  };
-
-  imageCell.font = {
-
-    color: { argb: "FF0000FF" },
-
-    underline: true
-  };
-}
+    const worksheet = workbook.addWorksheet("Attendance", {
+      // Keep the title + header visible while scrolling.
+      views: [{ state: "frozen", ySplit: 3 }]
     });
 
-    // CENTER ALIGN
-    worksheet.eachRow((row) => {
+    // Column widths
+    const widths = [24, 32, 14, 12, 14, 34, 16];
+    widths.forEach((w, i) => {
+      worksheet.getColumn(i + 1).width = w;
+    });
+
+    const thin = { style: "thin", color: { argb: "FFD9E3EA" } };
+    const borderAll = { top: thin, left: thin, bottom: thin, right: thin };
+
+    // ---- TITLE BANNER (row 1) ----
+    worksheet.mergeCells("A1:G1");
+    const titleCell = worksheet.getCell("A1");
+    titleCell.value = "TriVi Infracons  —  Attendance Report";
+    titleCell.font = { name: "Calibri", size: 16, bold: true, color: { argb: "FFFFFFFF" } };
+    titleCell.alignment = { vertical: "middle", horizontal: "center" };
+    titleCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B2433" } };
+    worksheet.getRow(1).height = 30;
+
+    // ---- SUBTITLE (row 2) ----
+    worksheet.mergeCells("A2:G2");
+    const subCell = worksheet.getCell("A2");
+    subCell.value =
+      `Exported ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}   •   ${records.length} record(s)`;
+    subCell.font = { name: "Calibri", size: 10, italic: true, color: { argb: "FF5B6B76" } };
+    subCell.alignment = { vertical: "middle", horizontal: "center" };
+    worksheet.getRow(2).height = 18;
+
+    // ---- HEADER ROW (row 3) ----
+    const headerRow = worksheet.getRow(3);
+    headerRow.values = ["Name", "Email", "Date", "Day", "Time", "Work Type", "Image"];
+    headerRow.height = 22;
+    headerRow.eachCell((cell) => {
+      cell.font = { name: "Calibri", bold: true, color: { argb: "FF3A2A08" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE0A23C" } };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = borderAll;
+    });
+
+    // ---- DATA ROWS (row 4 onward) ----
+    records.forEach((item, idx) => {
+      const row = worksheet.addRow([
+        item.name || "",
+        item.email || "",
+        item.date || "",
+        item.day || "",
+        item.time || "",
+        (item.workTypes || []).join(", "),
+        item.imageUrl ? "View Image" : "No Image"
+      ]);
+
+      row.height = 20;
+
+      // Alternating light row banding for readability.
+      const band = idx % 2 === 0 ? "FFFFFFFF" : "FFF7F2EA";
+
       row.eachCell((cell) => {
-        cell.alignment = {
-          vertical: "middle",
-          horizontal: "center",
-          wrapText: true
-        };
+        cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        cell.border = borderAll;
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: band } };
+        cell.font = { name: "Calibri", color: { argb: "FF0B2433" } };
       });
+
+      // Clickable image link
+      if (item.imageUrl) {
+        const imageCell = row.getCell(7);
+        imageCell.value = { text: "View Image", hyperlink: item.imageUrl };
+        imageCell.font = { name: "Calibri", color: { argb: "FF0A5C8A" }, underline: true };
+      }
     });
+
+    // Filter dropdowns on the header row
+    worksheet.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: 7 } };
 
     const fileName = `attendance-${Date.now()}.xlsx`;
 
