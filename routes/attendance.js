@@ -90,7 +90,14 @@ if (req.file) {
 
       const stream = cloudinary.uploader.upload_stream(
         {
-          folder: "trivi-attendance"
+          folder: "trivi-attendance",
+          resource_type: "image",
+          // Compress + cap size on upload to save storage and bandwidth.
+          transformation: [
+            { width: 1600, height: 1600, crop: "limit" },
+            { quality: "auto:good" },
+            { fetch_format: "auto" }
+          ]
         },
         (error, result) => {
           if (result) resolve(result);

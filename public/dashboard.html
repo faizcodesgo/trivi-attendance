@@ -1,753 +1,358 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Dashboard - TriVi Infracons</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard — TriVi Infracons</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="/logo.jpeg">
+  <link rel="icon" href="/trivi-favicon-96.png">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#7f1d1d">
+  <meta name="theme-color" content="#0b2433">
 
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+  body{ background:var(--cream); color:var(--ink); }
 
-  
-body{
-  margin:0;
-  font-family:'Poppins',sans-serif;
+  .layout{ display:flex; min-height:100vh; }
 
-  background:
-    linear-gradient(
-      135deg,
-      #140509,
-      #2b0d12,
-      #5a0f18
-    );
-
-  min-height:100vh;
-
-  display:flex;
-
-  color:white;
-
-  overflow-x:hidden;
-}
-
-/* =========================
-   SIDEBAR
-========================= */
-
-.sidebar{
-  width:270px;
-
-  height:100vh;
-
-  position:sticky;
-  top:0;
-
-  padding:24px;
-
-  display:flex;
-  flex-direction:column;
-
-  background:
-    rgba(255,255,255,0.08);
-
-  backdrop-filter:blur(20px);
-
-  border-right:
-    1px solid rgba(255,255,255,0.12);
-
-  box-shadow:
-    0 8px 30px rgba(0,0,0,0.2);
-
-  z-index:10;
-}
-
-.sidebar h2{
-  font-size:30px;
-  margin-bottom:24px;
-  font-weight:700;
-}
-
-.nav{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-  margin-top:20px;
-}
-
-.nav a{
-  text-decoration:none;
-
-  color:white;
-
-  padding:14px 16px;
-
-  border-radius:16px;
-
-  background:
-    rgba(255,255,255,0.05);
-
-  transition:0.3s ease;
-
-  font-weight:500;
-}
-
-.nav a:hover{
-  transform:translateX(5px);
-
-  background:
-    rgba(255,255,255,0.14);
-
-  box-shadow:
-    0 8px 20px rgba(0,0,0,0.18);
-}
-
-.logout{
-  margin-top:auto;
-
-  padding:14px;
-
-  border-radius:16px;
-
-  text-align:center;
-
-  background:
-    linear-gradient(
-      135deg,
-      #dc2626,
-      #991b1b
-    );
-
-  cursor:pointer;
-
-  transition:0.3s ease;
-}
-
-.logout:hover{
-  transform:translateY(-2px);
-}
-
-/* =========================
-   MAIN
-========================= */
-
-.main{
-  flex:1;
-  padding:28px;
-}
-
-/* =========================
-   FILTERS
-========================= */
-
-.controls{
-  display:flex;
-  flex-wrap:wrap;
-  gap:14px;
-
-  padding:22px;
-
-  border-radius:24px;
-
-  background:
-    rgba(255,255,255,0.08);
-
-  backdrop-filter:blur(18px);
-
-  border:
-    1px solid rgba(255,255,255,0.1);
-
-  margin-bottom:24px;
-
-  box-shadow:
-    0 8px 30px rgba(0,0,0,0.15);
-}
-
-.control-group{
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-}
-
-.control-group label{
-  font-size:13px;
-  color:#f3f4f6;
-}
-
-.control-group input{
-  padding:12px 14px;
-
-  border:none;
-
-  border-radius:14px;
-
-  background:
-    rgba(255,255,255,0.12);
-
-  color:white;
-
-  outline:none;
-}
-
-.controls button{
-  padding:12px 18px;
-
-  border:none;
-
-  border-radius:14px;
-
-  cursor:pointer;
-
-  font-weight:600;
-
-  color:white;
-
-  background:
-    linear-gradient(
-      135deg,
-      #111827,
-      #374151
-    );
-
-  transition:0.3s ease;
-}
-
-.controls button:hover{
-  transform:translateY(-2px);
-
-  box-shadow:
-    0 10px 24px rgba(0,0,0,0.2);
-}
-
-/* =========================
-   STATS
-========================= */
-
-.stats{
-  display:grid;
-
-  grid-template-columns:
-    repeat(auto-fit,minmax(180px,1fr));
-
-  gap:18px;
-
-  margin-bottom:26px;
-}
-
-.card{
-  padding:24px;
-
-  border-radius:24px;
-
-  background:
-    rgba(255,255,255,0.08);
-
-  backdrop-filter:blur(18px);
-
-  border:
-    1px solid rgba(255,255,255,0.1);
-
-  text-align:center;
-
-  transition:0.35s ease;
-
-  animation:fadeUp 0.7s ease;
-}
-
-.card:hover{
-  transform:
-    translateY(-6px)
-    scale(1.02);
-
-  box-shadow:
-    0 14px 34px rgba(0,0,0,0.24);
-}
-
-.card div{
-  font-size:34px;
-  font-weight:700;
-  margin-top:12px;
-}
-
-/* =========================
-   TABLE
-========================= */
-
-.table-card{
-  background:
-    rgba(255,255,255,0.08);
-
-  backdrop-filter:blur(18px);
-
-  border:
-    1px solid rgba(255,255,255,0.1);
-
-  border-radius:24px;
-
-  padding:20px;
-
-  overflow:auto;
-
-  box-shadow:
-    0 10px 28px rgba(0,0,0,0.18);
-}
-
-table{
-  width:100%;
-  border-collapse:collapse;
-}
-
-th{
-  background:
-    rgba(255,255,255,0.12);
-
-  padding:16px;
-
-  font-size:14px;
-
-  color:white;
-}
-
-td{
-  padding:16px;
-
-  border-bottom:
-    1px solid rgba(255,255,255,0.08);
-
-  text-align:center;
-
-  color:#f3f4f6;
-}
-
-tr{
-  transition:0.25s ease;
-}
-
-tr:hover{
-  background:
-    rgba(255,255,255,0.05);
-}
-
-/* =========================
-   BUTTONS
-========================= */
-
-.edit,
-.danger{
-  border:none;
-
-  padding:10px 14px;
-
-  border-radius:12px;
-
-  cursor:pointer;
-
-  color:white;
-
-  font-weight:600;
-
-  transition:0.3s ease;
-}
-
-.edit{
-  background:
-    linear-gradient(
-      135deg,
-      #2563eb,
-      #1d4ed8
-    );
-}
-
-.danger{
-  background:
-    linear-gradient(
-      135deg,
-      #dc2626,
-      #991b1b
-    );
-}
-
-.edit:hover,
-.danger:hover{
-  transform:translateY(-2px);
-}
-
-/* =========================
-   IMAGE PREVIEW
-========================= */
-
-.image-preview{
-  width:52px;
-  height:52px;
-
-  object-fit:cover;
-
-  border-radius:14px;
-
-  cursor:pointer;
-
-  transition:0.3s ease;
-}
-
-.image-preview:hover{
-  transform:scale(1.08);
-
-  box-shadow:
-    0 10px 24px rgba(0,0,0,0.3);
-}
-
-/* =========================
-   MODAL
-========================= */
-
-.modal{
-  display:none;
-
-  position:fixed;
-
-  top:0;
-  left:0;
-
-  width:100%;
-  height:100%;
-
-  justify-content:center;
-  align-items:center;
-
-  background:
-    rgba(0,0,0,0.45);
-
-  backdrop-filter:blur(8px);
-
-  animation:fadeIn 0.25s ease;
-}
-
-.modal-content{
-  width:90%;
-  max-width:420px;
-
-  padding:24px;
-
-  border-radius:24px;
-
-  background:
-    rgba(255,255,255,0.12);
-
-  backdrop-filter:blur(20px);
-
-  border:
-    1px solid rgba(255,255,255,0.1);
-
-  animation:zoomIn 0.25s ease;
-}
-
-.modal-content img{
-  border-radius:18px;
-}
-
-/* =========================
-   CHECKBOX GROUP
-========================= */
-
-.checkbox-group{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-top:18px;
-}
-
-.checkbox-group label{
-  display:flex;
-  align-items:center;
-  gap:10px;
-
-  padding:14px;
-
-  border-radius:14px;
-
-  background:
-    rgba(255,255,255,0.08);
-}
-
-/* =========================
-   ANIMATIONS
-========================= */
-
-@keyframes fadeIn{
-  from{
-    opacity:0;
-  }
-
-  to{
-    opacity:1;
-  }
-}
-
-@keyframes zoomIn{
-  from{
-    transform:scale(0.85);
-    opacity:0;
-  }
-
-  to{
-    transform:scale(1);
-    opacity:1;
-  }
-}
-
-@keyframes fadeUp{
-  from{
-    opacity:0;
-    transform:translateY(20px);
-  }
-
-  to{
-    opacity:1;
-    transform:translateY(0);
-  }
-}
-
-/* =========================
-   MOBILE
-========================= */
-
-@media(max-width:900px){
-
-  body{
-    flex-direction:column;
-  }
-
+  /* SIDEBAR */
   .sidebar{
-    width:100%;
-    height:auto;
-    position:relative;
-  }
-
-  .main{
-    margin-left:0;
-    padding:18px;
-  }
-
-  .controls{
+    width:248px;
+    flex-shrink:0;
+    position:sticky;
+    top:0;
+    height:100vh;
+    padding:26px 20px;
+    display:flex;
     flex-direction:column;
+    background:linear-gradient(170deg,var(--navy),var(--navy-soft));
+    color:var(--cream-soft);
   }
+  .brand{ display:flex; align-items:center; gap:12px; margin-bottom:30px; }
+  .brand img{ width:44px; height:44px; object-fit:contain; background:var(--cream-soft); border-radius:12px; padding:6px; }
+  .brand span{ font-family:var(--font-head); font-size:24px; font-weight:600; color:#fff; }
 
+  .nav{ display:flex; flex-direction:column; gap:8px; }
+  .nav a{
+    text-decoration:none;
+    color:rgba(243,238,230,.82);
+    padding:13px 15px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:500;
+    transition:background .2s ease,color .2s ease,transform .2s ease;
+  }
+  .nav a:hover{ background:rgba(255,255,255,.08); color:#fff; transform:translateX(3px); }
+  .nav a.active{ background:rgba(224,162,60,.16); color:var(--gold); }
+
+  .logout{
+    margin-top:auto;
+    padding:13px;
+    border-radius:12px;
+    text-align:center;
+    font-weight:600;
+    color:#fff;
+    background:var(--maroon);
+    border:none;
+    cursor:pointer;
+    transition:background .2s ease;
+  }
+  .logout:hover{ background:var(--maroon-deep); }
+
+  /* MAIN */
+  .main{ flex:1; padding:30px 32px; min-width:0; }
+
+  .page-head{ margin-bottom:22px; animation:fadeUp .6s ease both; }
+  .page-head h1{ font-size:30px; margin-bottom:4px; }
+  .page-head p{ color:var(--muted); font-size:15px; }
+
+  /* FILTER BAR */
+  .controls{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:flex-end;
+    gap:14px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    margin-bottom:22px;
+    box-shadow:var(--shadow);
+    animation:fadeUp .6s ease both;
+  }
+  .control-group{ display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .control-group.search{ flex:1 1 220px; max-width:300px; }
+  .control-group label{ font-size:12px; color:var(--muted); font-weight:500; }
+  .control-group input{
+    width:100%;
+    padding:11px 13px;
+    border:1px solid var(--line);
+    border-radius:10px;
+    background:var(--cream-soft);
+    color:var(--ink);
+    font-size:14px;
+    outline:none;
+    transition:border-color .2s ease;
+  }
+  .control-group input:focus{ border-color:var(--gold); }
+
+  .controls .btns{ display:flex; flex-wrap:wrap; gap:10px; margin-left:auto; }
+  .controls button{
+    width:auto;
+    margin:0;
+    padding:11px 18px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    transition:transform .2s ease,background .2s ease;
+  }
+  .controls button:hover{ transform:translateY(-2px); }
+  .btn-load{ background:var(--navy); color:#fff; }
+  .btn-apply{ background:var(--gold); color:var(--gold-ink); }
+  .btn-reset{ background:transparent; color:var(--muted); border:1px solid var(--line) !important; }
+  .btn-export{ background:var(--teal); color:#fff; }
+
+  /* STATS */
   .stats{
-    grid-template-columns:1fr;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:14px;
+    margin-bottom:24px;
   }
-
-  table{
-    min-width:700px;
+  .card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:20px;
+    text-align:center;
+    box-shadow:var(--shadow);
+    position:relative;
+    overflow:hidden;
+    transition:transform .25s ease,box-shadow .25s ease;
+    animation:fadeUp .6s ease both;
   }
-}
-/* =========================
-   SKELETON LOADING
-========================= */
+  .card::before{ content:""; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gold); }
+  .card:hover{ transform:translateY(-4px); box-shadow:var(--shadow-lg); }
+  .card .label{ font-size:13px; color:var(--muted); font-weight:500; }
+  .card div.num{ font-family:var(--font-head); font-size:32px; font-weight:600; color:var(--navy); margin-top:8px; }
 
-.skeleton-wrapper{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-
-  margin-bottom:20px;
-}
-
-.skeleton-row{
-  height:56px;
-
-  border-radius:14px;
-
-  background:
-    linear-gradient(
-      90deg,
-      rgba(255,255,255,0.05),
-      rgba(255,255,255,0.12),
-      rgba(255,255,255,0.05)
-    );
-
-  background-size:200% 100%;
-
-  animation:skeletonMove 1.2s infinite;
-}
-
-@keyframes skeletonMove{
-
-  0%{
-    background-position:200% 0;
+  /* TABLE */
+  .table-card{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:8px;
+    overflow:auto;
+    box-shadow:var(--shadow);
+    animation:fadeUp .6s ease both;
   }
-
-  100%{
-    background-position:-200% 0;
+  table{ width:100%; border-collapse:collapse; min-width:760px; }
+  th{
+    background:var(--cream-soft);
+    padding:15px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:var(--navy);
+    text-align:center;
+    white-space:nowrap;
   }
-}
-
-/* =========================
-   IMAGE POPUP PREMIUM
-========================= */
-
-#imageModal{
-  transition:0.25s ease;
-}
-
-#previewImage{
-  transition:0.35s ease;
-}
-
-#imageModal.show{
-  animation:fadeIn 0.25s ease;
-}
-
-#imageModal.show .modal-content{
-  animation:zoomIn 0.25s ease;
-}
-
-/* =========================
-   BUTTON LOADING
-========================= */
-
-.loading-btn{
-  opacity:0.7;
-  pointer-events:none;
-  position:relative;
-}
-
-.loading-btn::after{
-  content:"";
-
-  width:16px;
-  height:16px;
-
-  border:2px solid rgba(255,255,255,0.3);
-  border-top:2px solid white;
-
-  border-radius:50%;
-
-  position:absolute;
-
-  right:16px;
-  top:50%;
-
-  transform:translateY(-50%);
-
-  animation:spin 0.7s linear infinite;
-}
-
-@keyframes spin{
-  to{
-    transform:
-      translateY(-50%)
-      rotate(360deg);
+  th:first-child{ border-top-left-radius:12px; }
+  th:last-child{ border-top-right-radius:12px; }
+  td{
+    padding:14px;
+    border-bottom:1px solid var(--line);
+    text-align:center;
+    color:var(--ink);
+    font-size:14px;
   }
-}
+  tr{ transition:background .2s ease; }
+  tbody tr:hover{ background:var(--cream-soft); }
 
+  .edit,.danger{
+    border:none;
+    padding:8px 14px;
+    border-radius:10px;
+    cursor:pointer;
+    color:#fff;
+    font-weight:600;
+    font-size:13px;
+    width:auto;
+    margin:2px;
+    transition:transform .2s ease;
+  }
+  .edit{ background:var(--navy); }
+  .danger{ background:var(--maroon); }
+  .edit:hover,.danger:hover{ transform:translateY(-2px); }
+
+  .image-preview{
+    width:46px; height:46px;
+    object-fit:cover;
+    border-radius:10px;
+    cursor:pointer;
+    transition:transform .2s ease;
+  }
+  .image-preview:hover{ transform:scale(1.08); }
+
+  /* MODALS */
+  .modal{
+    display:none;
+    position:fixed; inset:0;
+    justify-content:center; align-items:center;
+    background:rgba(11,36,51,.45);
+    z-index:50;
+    animation:fadeUp .25s ease;
+  }
+  .modal-content{
+    width:90%; max-width:420px;
+    padding:26px;
+    border-radius:22px;
+    background:var(--paper);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow-lg);
+  }
+  .modal-content h3{ margin-bottom:6px; }
+  .modal-content img{ border-radius:14px; }
+
+  .checkbox-group{ display:flex; flex-direction:column; gap:10px; margin-top:14px; }
+  .checkbox-group label{
+    display:flex; align-items:center; gap:10px;
+    padding:13px;
+    border-radius:12px;
+    background:var(--cream-soft);
+    border:1px solid var(--line);
+    cursor:pointer;
+    font-size:14px;
+    transition:border-color .2s ease;
+  }
+  .checkbox-group label:hover{ border-color:var(--gold); }
+  .checkbox-group input{ accent-color:var(--maroon); width:17px; height:17px; }
+
+  .modal-actions{ margin-top:16px; display:flex; gap:10px; }
+  .modal-actions button{ margin:0; padding:12px; }
+  .m-reset{ background:transparent; color:var(--muted); border:1px solid var(--line); }
+  .m-save{ background:var(--gold); color:var(--gold-ink); }
+
+  /* SKELETON */
+  .skeleton-wrapper{ display:flex; flex-direction:column; gap:12px; padding:12px; }
+  .skeleton-row{
+    height:50px; border-radius:12px;
+    background:linear-gradient(90deg,#efe9df,#f7f2ea,#efe9df);
+    background-size:200% 100%;
+    animation:skeletonMove 1.3s infinite;
+  }
+  @keyframes skeletonMove{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
+
+  /* RESPONSIVE */
+  @media(max-width:900px){
+    .layout{ flex-direction:column; }
+    .sidebar{
+      width:100%; height:auto; position:relative;
+      flex-direction:row; align-items:center;
+      flex-wrap:wrap; gap:10px;
+      padding:16px 18px;
+    }
+    .brand{ margin-bottom:0; }
+    .nav{ flex-direction:row; flex-wrap:wrap; gap:6px; margin-left:8px; }
+    .nav a{ padding:9px 12px; font-size:14px; }
+    .logout{ margin-left:auto; width:auto; padding:10px 16px; }
+    .main{ padding:22px 18px; }
+    .page-head h1{ font-size:25px; }
+    .controls .btns{ margin-left:0; width:100%; }
+    .control-group.search{ max-width:none; flex:1 1 100%; }
+  }
 </style>
 </head>
 
 <body>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <h2>TriVi</h2>
+<div class="layout">
 
-  <!-- FILTERS -->
-<div class="controls">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <img src="trivi-logo.png" alt="TriVi">
+      <span>TriVi</span>
+    </div>
+    <nav class="nav">
+      <a href="/dashboard" class="active">Dashboard</a>
+      <a href="/">Attendance</a>
+      <a href="#" onclick="exportExcel();return false;">Export</a>
+    </nav>
+    <button class="logout" onclick="window.location.href='/auth/logout'">Logout</button>
+  </aside>
 
-  <!-- SEARCH -->
-  <div class="control-group">
-    <label>Search</label>
-    <input type="text" id="searchInput">
-  </div>
+  <!-- MAIN -->
+  <main class="main">
 
-  <!-- PINPOINT -->
-  <div class="control-group">
-    <label>📍 Date</label>
-    <input type="date" id="singleDate">
-  </div>
+    <div class="page-head">
+      <h1>Attendance dashboard</h1>
+      <p>Track and manage employee attendance</p>
+    </div>
 
-  <!-- RANGE -->
-  <div class="control-group">
-    <label>📅 From Date</label>
-    <input type="date" id="fromDate">
-  </div>
+    <!-- FILTERS -->
+    <div class="controls">
+      <div class="control-group search">
+        <label>Search</label>
+        <input type="text" id="searchInput" placeholder="Name or email">
+      </div>
+      <div class="control-group">
+        <label>Date</label>
+        <input type="date" id="singleDate">
+      </div>
+      <div class="control-group">
+        <label>From</label>
+        <input type="date" id="fromDate">
+      </div>
+      <div class="control-group">
+        <label>To</label>
+        <input type="date" id="toDate">
+      </div>
+      <div class="btns">
+        <button class="btn-load" onclick="loadData()">Load All</button>
+        <button class="btn-apply" onclick="applyFilters()">Apply</button>
+        <button class="btn-reset" onclick="resetFilters()">Reset</button>
+        <button class="btn-export" onclick="exportExcel()">Excel Export</button>
+      </div>
+    </div>
 
-  <div class="control-group">
-    <label>📅 To Date</label>
-    <input type="date" id="toDate">
-  </div>
+    <!-- STATS -->
+    <div class="stats">
+      <div class="card"><div class="label">Total</div><div class="num" id="total">0</div></div>
+      <div class="card"><div class="label">WFH</div><div class="num" id="wfh">0</div></div>
+      <div class="card"><div class="label">Office</div><div class="num" id="office">0</div></div>
+      <div class="card"><div class="label">Site</div><div class="num" id="site">0</div></div>
+      <div class="card"><div class="label">Leave</div><div class="num" id="leave">0</div></div>
+      <div class="card"><div class="label">Govt</div><div class="num" id="govt">0</div></div>
+    </div>
 
-  <!-- BUTTONS -->
-  <button onclick="loadData()">
-    Load All
-  </button>
+    <!-- TABLE -->
+    <div class="table-card">
+      <div id="tableLoader" class="skeleton-wrapper">
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+        <div class="skeleton-row"></div>
+      </div>
 
-  <button onclick="applyFilters()">
-    Apply
-  </button>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Day</th>
+            <th>Time</th>
+            <th>Work Type</th>
+            <th>Image</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
 
-  <button onclick="resetFilters()">
-    Reset
-  </button>
-
-  <button onclick="exportExcel()">
-    Excel Export
-  </button>
-
-</div>
-
-  <div class="nav">
-    <a href="/dashboard">📊 Dashboard</a>
-    <a href="/">📅 Attendance</a>
-    <a href="#" onclick="exportExcel()">📤 Export</a>
-  </div>
-
-  <div class="logout" onclick="window.location.href='/auth/logout'">
-    Logout
-  </div>
-</div>
-
-<!-- MAIN -->
-<div class="main">
-
-  <!-- STATS -->
-  <div class="stats">
-    <div class="card">Total <div id="total">0</div></div>
-    <div class="card">WFH <div id="wfh">0</div></div>
-    <div class="card">Office <div id="office">0</div></div>
-    <div class="card">Site <div id="site">0</div></div>
-    <div class="card">Leave <div id="leave">0</div></div>
-    <div class="card">Govt <div id="govt">0</div></div>
-  </div>
-
-  <!-- TABLE -->
-<div class="table-card">
-
-  <div id="tableLoader" class="skeleton-wrapper">
-
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-    <div class="skeleton-row"></div>
-
-  </div>
-
-  <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Date</th>
-          <th>Day</th>
-          <th>Time</th>
-          <th>Work Type</th>
-          <th>Image</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-  </div>
-
+  </main>
 </div>
 
 <!-- IMAGE MODAL -->
@@ -759,68 +364,20 @@ tr:hover{
 
 <!-- EDIT MODAL -->
 <div class="modal" id="editModal">
-
   <div class="modal-content">
-
-    <h3>Edit Work Type</h3>
-
+    <h3>Edit work type</h3>
     <div class="checkbox-group">
-
-      <label>
-        <input type="checkbox" value="Work From Home">
-        Work From Home
-      </label>
-
-      <label>
-        <input type="checkbox" value="Office Management">
-        Office Management
-      </label>
-
-      <label>
-        <input type="checkbox" value="Site Visit">
-        Site Visit
-      </label>
-
-      <label>
-        <input type="checkbox" value="Leave">
-        Leave
-      </label>
-
-      <label>
-        <input type="checkbox" value="Government Holiday">
-        Government Holiday
-      </label>
-
+      <label><input type="checkbox" value="Work From Home"> Work From Home</label>
+      <label><input type="checkbox" value="Office Management"> Office Management</label>
+      <label><input type="checkbox" value="Site Visit"> Site Visit</label>
+      <label><input type="checkbox" value="Leave"> Leave</label>
+      <label><input type="checkbox" value="Government Holiday"> Government Holiday</label>
     </div>
-
-    <div style="margin-top:15px; display:flex; gap:10px;">
-
-      <button
-  onclick="resetModal()"
-  style="
-    background:#2563eb;
-    color:white;
-    font-weight:600;
-  "
->
-  Reset
-</button>
-
-<button
-  onclick="saveEdit()"
-  style="
-    background:#dc2626;
-    color:white;
-    font-weight:600;
-  "
->
-  Save
-</button>
-
+    <div class="modal-actions">
+      <button class="m-reset" onclick="resetModal()">Reset</button>
+      <button class="m-save" onclick="saveEdit()">Save</button>
     </div>
-
   </div>
-
 </div>
 
 <script>
@@ -830,30 +387,17 @@ let editId = null;
 
 // LOAD DATA
 async function loadData() {
-
   try {
+    const loader = document.getElementById("tableLoader");
+    if(loader){ loader.style.display = "flex"; }
 
-    const loader =
-      document.getElementById("tableLoader");
-
-    if(loader){
-      loader.style.display = "flex";
-    }
-
-    const res = await fetch("/attendance", {
-      credentials: "include"
-    });
-
+    const res = await fetch("/attendance", { credentials: "include" });
     const data = await res.json();
 
     allData = Array.isArray(data) ? data : [];
-
     render(allData);
 
-    if(loader){
-      loader.style.display = "none";
-    }
-
+    if(loader){ loader.style.display = "none"; }
   } catch (err) {
     console.log(err);
     alert("Failed to load attendance");
@@ -862,442 +406,211 @@ async function loadData() {
 
 // RENDER TABLE + STATS
 function render(data) {
-
   const tbody = document.getElementById("tbody");
-
   tbody.innerHTML = "";
 
-  let stats = {
-    total: data.length,
-    wfh: 0,
-    office: 0,
-    site: 0,
-    leave: 0,
-    govt: 0
-  };
+  let stats = { total: data.length, wfh: 0, office: 0, site: 0, leave: 0, govt: 0 };
 
   data.forEach(item => {
-
-    // STATS
     (item.workTypes || []).forEach(t => {
-
       if (t.includes("Work From Home")) stats.wfh++;
-
       else if (t.includes("Office")) stats.office++;
-
       else if (t.includes("Site")) stats.site++;
-
       else if (t.includes("Leave")) stats.leave++;
-
       else if (t.includes("Government")) stats.govt++;
     });
 
-    // TABLE ROW
     const row = document.createElement("tr");
-
     row.innerHTML = `
       <td>${item.name || ""}</td>
-
       <td>${item.date || ""}</td>
-
       <td>${item.day || ""}</td>
-
       <td>${item.time || ""}</td>
-
       <td>${(item.workTypes || []).join(", ")}</td>
-
       <td>
         ${
           item.imageUrl
-          ? `
-            <img
-              src="${item.imageUrl}"
-              class="image-preview"
-              onclick="openImage('${item.imageUrl}')"
-            >
-          `
+          ? `<img src="${item.imageUrl}" class="image-preview" onclick="openImage('${item.imageUrl}')">`
           : "No Image"
         }
       </td>
-
       <td>
-        <button
-          class="edit"
-          onclick="openEdit('${item._id}')"
-        >
-          Edit
-        </button>
-
-        <button
-          class="danger"
-          onclick="deleteEntry('${item._id}')"
-        >
-          Delete
-        </button>
+        <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
+        <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
       </td>
     `;
-
     tbody.appendChild(row);
   });
 
-  // UPDATE STATS
   document.getElementById("total").innerText = stats.total;
-
   document.getElementById("wfh").innerText = stats.wfh;
-
   document.getElementById("office").innerText = stats.office;
-
   document.getElementById("site").innerText = stats.site;
-
   document.getElementById("leave").innerText = stats.leave;
-
   document.getElementById("govt").innerText = stats.govt;
 }
 
 // APPLY FILTERS
 function applyFilters() {
-
-  const search =
-    document.getElementById("searchInput")
-    .value
-    .toLowerCase();
-
-  const singleDate =
-    document.getElementById("singleDate").value;
-
-  const fromDate =
-    document.getElementById("fromDate").value;
-
-  const toDate =
-    document.getElementById("toDate").value;
+  const search = document.getElementById("searchInput").value.toLowerCase();
+  const singleDate = document.getElementById("singleDate").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
 
   let filtered = [...allData];
 
-  // SEARCH
   if (search) {
-
     filtered = filtered.filter(item =>
-
-      (item.name || "")
-      .toLowerCase()
-      .includes(search)
-
-      ||
-
-      (item.email || "")
-      .toLowerCase()
-      .includes(search)
+      (item.name || "").toLowerCase().includes(search) ||
+      (item.email || "").toLowerCase().includes(search)
     );
   }
 
-  // DATE FILTER
-if (fromDate && toDate) {
-
-  // RANGE DATE
-  filtered = filtered.filter(item => {
-
-    const itemDate =
-      new Date(item.date)
-      .toISOString()
-      .split("T")[0];
-
-    return (
-      itemDate >= fromDate
-      &&
-      itemDate <= toDate
-    );
-  });
-
-}
-
-else if (singleDate) {
-
-  // PINPOINT DATE
-  filtered = filtered.filter(item => {
-
-    const itemDate =
-      new Date(item.date)
-      .toISOString()
-      .split("T")[0];
-
-    return itemDate === singleDate;
-  });
-}
+  if (fromDate && toDate) {
+    filtered = filtered.filter(item => {
+      const itemDate = new Date(item.date).toISOString().split("T")[0];
+      return itemDate >= fromDate && itemDate <= toDate;
+    });
+  }
+  else if (singleDate) {
+    filtered = filtered.filter(item => {
+      const itemDate = new Date(item.date).toISOString().split("T")[0];
+      return itemDate === singleDate;
+    });
+  }
 
   render(filtered);
 }
 
 // RESET FILTERS
 function resetFilters() {
-
   document.getElementById("searchInput").value = "";
-
   document.getElementById("singleDate").value = "";
-
   document.getElementById("fromDate").value = "";
-
   document.getElementById("toDate").value = "";
-
   render(allData);
 }
 
 // EXPORT EXCEL
 async function exportExcel() {
-
-  const search =
-    document.getElementById("searchInput").value;
-
-  const singleDate =
-    document.getElementById("singleDate").value;
-
-  const fromDate =
-    document.getElementById("fromDate").value;
-
-  const toDate =
-    document.getElementById("toDate").value;
+  const search = document.getElementById("searchInput").value;
+  const singleDate = document.getElementById("singleDate").value;
+  const fromDate = document.getElementById("fromDate").value;
+  const toDate = document.getElementById("toDate").value;
 
   const params = new URLSearchParams();
-
-if (search)
-  params.append("search", search);
-
-if (singleDate)
-  params.append("singleDate", singleDate);
-
-if (fromDate)
-  params.append("fromDate", fromDate);
-
-if (toDate)
-  params.append("toDate", toDate);
+  if (search) params.append("search", search);
+  if (singleDate) params.append("singleDate", singleDate);
+  if (fromDate) params.append("fromDate", fromDate);
+  if (toDate) params.append("toDate", toDate);
 
   try {
-
-    const response = await fetch(
-
-      "/attendance/export/excel?" + params.toString(),
-
-      {
-        credentials: "include"
-      }
-    );
-
-    if (!response.ok) {
-
-      alert("Export failed");
-
-      return;
-    }
+    const response = await fetch("/attendance/export/excel?" + params.toString(), { credentials: "include" });
+    if (!response.ok) { alert("Export failed"); return; }
 
     const blob = await response.blob();
-
-    const url =
-      window.URL.createObjectURL(blob);
-
+    const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
-
     a.href = url;
-
-    a.download =
-      `attendance-${Date.now()}.xlsx`;
-
+    a.download = `attendance-${Date.now()}.xlsx`;
     document.body.appendChild(a);
-
     a.click();
-
     a.remove();
-
     window.URL.revokeObjectURL(url);
-
   } catch (err) {
-
     console.log(err);
-
     alert("Export error");
   }
 }
 
 // DELETE
 async function deleteEntry(id) {
-
-  const confirmDelete =
-    confirm("Delete this attendance?");
-
-  if (!confirmDelete) return;
-
+  if (!confirm("Delete this attendance?")) return;
   try {
-
-    await fetch("/attendance/" + id, {
-
-      method: "DELETE",
-
-      credentials: "include"
-    });
-
+    await fetch("/attendance/" + id, { method: "DELETE", credentials: "include" });
     loadData();
-
   } catch (err) {
-
     console.log(err);
-
     alert("Delete failed");
   }
 }
 
 // OPEN EDIT MODAL
 function openEdit(id) {
-
   editId = id;
+  const item = allData.find(x => x._id === id);
+  const current = item?.workTypes || [];
 
-  const item =
-    allData.find(x => x._id === id);
+  document.querySelectorAll(".checkbox-group input").forEach(cb => {
+    cb.checked = current.includes(cb.value);
+  });
 
-  const current =
-    item?.workTypes || [];
-
-  document
-    .querySelectorAll(".checkbox-group input")
-    .forEach(cb => {
-
-      cb.checked =
-        current.includes(cb.value);
-    });
-
-  document
-    .getElementById("editModal")
-    .style.display = "flex";
+  document.getElementById("editModal").style.display = "flex";
 }
 
 // SAVE EDIT
 async function saveEdit() {
-
   const selected = Array.from(
-
-    document.querySelectorAll(
-      ".checkbox-group input:checked"
-    )
-
+    document.querySelectorAll(".checkbox-group input:checked")
   ).map(cb => cb.value);
 
-  if (selected.length === 0) {
-
-    alert("Select at least one option");
-
-    return;
-  }
-
-  if (selected.length > 2) {
-
-    alert("Only 2 selections allowed");
-
-    return;
-  }
+  if (selected.length === 0) { alert("Select at least one option"); return; }
+  if (selected.length > 2) { alert("Only 2 selections allowed"); return; }
 
   try {
-
     await fetch("/attendance/" + editId, {
-
       method: "PUT",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
+      headers: { "Content-Type": "application/json" },
       credentials: "include",
-
-      body: JSON.stringify({
-        workTypes: selected
-      })
+      body: JSON.stringify({ workTypes: selected })
     });
 
-    document
-      .getElementById("editModal")
-      .style.display = "none";
-
+    document.getElementById("editModal").style.display = "none";
     loadData();
-
   } catch (err) {
-
     console.log(err);
-
     alert("Update failed");
   }
 }
 
 // RESET MODAL
 function resetModal() {
-
-  document
-    .querySelectorAll(".checkbox-group input")
-    .forEach(cb => cb.checked = false);
+  document.querySelectorAll(".checkbox-group input").forEach(cb => cb.checked = false);
 }
 
 // IMAGE MODAL
 function openImage(url) {
-
-  document
-    .getElementById("previewImage")
-    .src = url;
-
- const modal =
-  document.getElementById("imageModal");
-
-modal.style.display = "flex";
-
-setTimeout(() => {
-  modal.classList.add("show");
-}, 10);
+  document.getElementById("previewImage").src = url;
+  document.getElementById("imageModal").style.display = "flex";
 }
 
 // CLOSE MODALS
-document
-.getElementById("imageModal")
-.addEventListener("click", (e) => {
-
+document.getElementById("imageModal").addEventListener("click", (e) => {
   if (e.target.id === "imageModal") {
-
-    const modal =
-  document.getElementById("imageModal");
-
-modal.classList.remove("show");
-
-setTimeout(() => {
-  modal.style.display = "none";
-}, 200);
+    document.getElementById("imageModal").style.display = "none";
   }
 });
 
-document
-.getElementById("editModal")
-.addEventListener("click", (e) => {
-
+document.getElementById("editModal").addEventListener("click", (e) => {
   if (e.target.id === "editModal") {
-
-    document
-      .getElementById("editModal")
-      .style.display = "none";
+    document.getElementById("editModal").style.display = "none";
   }
 });
 
-// GLOBAL BUTTON BINDING
+// GLOBAL BINDING
 window.applyFilters = applyFilters;
-
 window.resetFilters = resetFilters;
-
 window.exportExcel = exportExcel;
-
 window.deleteEntry = deleteEntry;
-
 window.openEdit = openEdit;
-
 window.saveEdit = saveEdit;
-
 window.resetModal = resetModal;
+window.loadData = loadData;
 
 // INITIAL LOAD
 loadData();
 
 </script>
-
 
 </body>
 </html>

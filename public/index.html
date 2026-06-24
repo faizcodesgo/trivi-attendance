@@ -1,222 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  >
-
-  <title>TriVi Infracons</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TriVi Infracons — Attendance</title>
   <link rel="stylesheet" href="style.css">
-  <link rel="icon" href="/logo.jpeg">
+  <link rel="icon" href="/trivi-favicon-96.png">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#7f1d1d">
+  <meta name="theme-color" content="#0b2433">
 </head>
 
 <body>
 
 <div class="split-container">
 
-  <!-- =========================
-       LEFT SIDE
-  ========================== -->
-
+  <!-- LEFT SIDE -->
   <div class="left-panel">
-
     <div class="left-content">
 
-      <img
-        src="logo.jpeg"
-        class="hero-logo"
-      >
+      <img src="trivi-logo.png" alt="TriVi Infracons" class="hero-logo">
 
       <h1>Welcome</h1>
 
       <p class="hero-text">
-        Employee Attendance
-        System for TriVi Infracons Pvt Ltd
-        <br>
-        — Designed by Faiz Ahmed
+        Employee attendance system for TriVi Infracons Pvt Ltd
+        <span class="by">Lake rejuvenation &amp; watershed engineering</span>
       </p>
 
-      <img
-  src="https://cdn-icons-png.flaticon.com/512/3652/3652191.png"
-  class="hero-image calendar-image"
->
+      <!-- on-brand watershed illustration -->
+      <svg class="hero-art" viewBox="0 0 320 196" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Watershed landscape illustration">
+        <circle cx="246" cy="58" r="30" fill="#e0a23c" opacity="0.18"/>
+        <circle cx="246" cy="58" r="20" fill="#e0a23c"/>
+        <path d="M0 132 C70 96 120 120 180 104 C230 91 280 110 320 98 L320 196 L0 196 Z" fill="#0e8a8a" opacity="0.32"/>
+        <path d="M0 150 C60 124 130 150 200 138 C250 129 290 146 320 138 L320 196 L0 196 Z" fill="#2f9e54" opacity="0.30"/>
+        <g stroke="#9fe6d8" stroke-width="2.4" stroke-linecap="round" fill="none" opacity="0.85">
+          <path d="M26 170 q14 -8 28 0 t28 0 t28 0"/>
+          <path d="M150 180 q14 -8 28 0 t28 0 t28 0"/>
+        </g>
+        <g stroke="#e0a23c" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.8">
+          <path d="M60 50 q8 -7 16 0"/>
+          <path d="M84 58 q8 -7 16 0"/>
+        </g>
+      </svg>
 
     </div>
-
   </div>
 
-  <!-- =========================
-       RIGHT SIDE
-  ========================== -->
-
+  <!-- RIGHT SIDE -->
   <div class="right-panel">
-
     <div class="form-box">
 
       <!-- HEADER -->
       <div class="header">
-
-        <img
-          src="logo.jpeg"
-          class="logo"
-        >
-
-        <h2>Employee Attendance</h2>
-
-        <p>
-          Please mark your attendance
-        </p>
-
+        <img src="trivi-logo.png" alt="TriVi Infracons" class="logo">
+        <h2>Mark your attendance</h2>
+        <p>Select your work type for today</p>
       </div>
 
       <!-- CHECKBOXES -->
       <div class="checkboxes">
-
         <label class="checkbox-item">
-
-          <input
-            type="checkbox"
-            name="workTypes"
-            value="Work From Home"
-          >
-
+          <input type="checkbox" name="workTypes" value="Work From Home">
           <span>Work From Home</span>
-
         </label>
-
         <label class="checkbox-item">
-
-          <input
-            type="checkbox"
-            name="workTypes"
-            value="Office Management"
-          >
-
+          <input type="checkbox" name="workTypes" value="Office Management">
           <span>Office Management</span>
-
         </label>
-
         <label class="checkbox-item">
-
-          <input
-            type="checkbox"
-            name="workTypes"
-            value="Site Visit"
-          >
-
+          <input type="checkbox" name="workTypes" value="Site Visit">
           <span>Site Visit</span>
-
         </label>
-
         <label class="checkbox-item">
-
-          <input
-            type="checkbox"
-            name="workTypes"
-            value="Leave"
-          >
-
+          <input type="checkbox" name="workTypes" value="Leave">
           <span>Leave</span>
-
         </label>
-
         <label class="checkbox-item">
-
-          <input
-            type="checkbox"
-            name="workTypes"
-            value="Government Holiday"
-          >
-
+          <input type="checkbox" name="workTypes" value="Government Holiday">
           <span>Government Holiday</span>
-
         </label>
-
       </div>
 
       <!-- IMAGE -->
-      <label
-        for="image"
-        class="upload-btn"
-      >
-        Upload Image
-      </label>
+      <label for="image" class="upload-btn">Upload Image</label>
+      <input type="file" id="image" accept="image/*" hidden>
 
-      <input
-        type="file"
-        id="image"
-        accept="image/*"
-        hidden
-      >
+      <div id="imageName" class="image-name">No image selected</div>
 
-      <!-- IMAGE NAME -->
-      <div
-        id="imageName"
-        class="image-name"
-      >
-        No image selected
-      </div>
-
-      <!-- LOADING -->
-      <div
-        id="loadingBox"
-        class="loading-box"
-        style="display:none;"
-      >
+      <div id="loadingBox" class="loading-box" style="display:none;">
         Uploading image...
       </div>
 
       <!-- BUTTONS -->
-      <button
-        id="submitBtn"
-        onclick="submitAttendance()"
-        class="submit-btn"
-      >
+      <button id="submitBtn" onclick="submitAttendance()" class="submit-btn">
         Submit Attendance
       </button>
 
-      <button
-        onclick="resetForm()"
-        class="reset-btn"
-      >
-        Reset
-      </button>
+      <button onclick="resetForm()" class="reset-btn">Reset</button>
 
-      <!-- ADMIN ONLY -->
-      <button
-        id="dashboardBtn"
-        onclick="goDashboard()"
-        class="dashboard-btn"
-        style="display:none;"
-      >
+      <button id="dashboardBtn" onclick="goDashboard()" class="dashboard-btn" style="display:none;">
         Open Dashboard
       </button>
 
-      <!-- LOGOUT -->
-      <a
-        href="/auth/logout"
-        style="width:100%;"
-      >
-
-        <button class="logout-btn">
-          Logout
-        </button>
-
+      <a href="/auth/logout" style="text-decoration:none;">
+        <button class="logout-btn">Logout</button>
       </a>
 
-      <!-- MESSAGE -->
       <p id="msg"></p>
 
     </div>
-
   </div>
 
 </div>
