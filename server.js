@@ -7,12 +7,14 @@ const session = require("express-session");
 const passport = require("passport");
 const webpush = require("web-push");
 const cron = require("node-cron");
+const helmet = require("helmet");
 
 require("./config/passport");
 
 const connectDB = require("./config/db");
 const attendanceRoutes = require("./routes/attendance");
 const allowedUsers = require("./config/allowedUsers");
+const Subscription = require("./models/Subscription");
 
 const app = express();
 
@@ -24,12 +26,18 @@ connectDB();
 
 webpush.setVapidDetails(
   "mailto:admin@trivi.com",
-
-  "BPtwROFKy9Rq-Qm8InlFphIJYPZxwfrViN8HWj3wPwXYQ2n_HFA3w186rrHglumFXxyWxgkQo6lr-C3f_loeAcE",
-
-  "XrLEIOSEQLth78oz_JdQtssQ5Y2jkcf2eaaonwFqtP4"
+  process.env.PUBLIC_KEY,
+  process.env.PRIVATE_KEY
 );
-let subscriptions = [];
+
+/* ---------------- SECURITY HEADERS ---------------- */
+// Adds standard protective HTTP headers. CSP is disabled because the
+// pages use inline scripts / styles and load images from Cloudinary & a CDN.
+app.use(
+  helmet({
+    contentSecurityPolicy: false,
+  })
+);
 
 /* ---------------- MIDDLEWARE ---------------- */
 
@@ -44,7 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 /* ---------------- SESSION ---------------- */
 
 app.use(session({
-  secret: "trivi_secret",
+  secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -171,90 +179,79 @@ app.get("/api/check-admin", ensureAuth, (req, res) => {
 
 /* ---------------- PUSH SUBSCRIBE ---------------- */
 
-app.post("/subscribe", (req, res) => {
+app.post("/subscribe", async (req, res) => {
 
-  const exists = subscriptions.find(
-    sub => sub.endpoint === req.body.endpoint
-  );
+  try {
 
-  if (!exists) {
-    subscriptions.push(req.body);
+    const { endpoint, keys } = req.body;
+
+    if (!endpoint) {
+      return res.status(400).json({ error: "Invalid subscription" });
+    }
+
+    // Save (or update) the subscription in the database.
+    await Subscription.findOneAndUpdate(
+      { endpoint },
+      { endpoint, keys },
+      { upsert: true, new: true }
+    );
+
+    res.status(201).json({});
+
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: "Subscribe failed" });
   }
-
-  res.status(201).json({});
 
 });
 
-/* ---------------- DAILY 10AM REMINDER ---------------- */
+/* ---------------- REMINDER SENDER ---------------- */
 
-cron.schedule("0 10 * * *", async () => {
+async function sendReminders() {
 
   const payload = JSON.stringify({
     title: "TriVi Attendance Reminder",
     body: "Please mark today's attendance."
   });
 
-  for (const sub of subscriptions) {
+  const subs = await Subscription.find();
+
+  for (const sub of subs) {
 
     try {
       await webpush.sendNotification(
-        sub,
+        { endpoint: sub.endpoint, keys: sub.keys },
         payload
       );
     } catch (err) {
-      console.log(err);
+      // Subscription is gone/expired — remove it so we don't keep retrying.
+      if (err.statusCode === 404 || err.statusCode === 410) {
+        await Subscription.deleteOne({ endpoint: sub.endpoint });
+      } else {
+        console.log(err);
+      }
     }
 
   }
 
+}
+
+/* ---------------- DAILY 10 AM REMINDER (IST) ---------------- */
+
+cron.schedule("0 10 * * *", sendReminders, {
+  timezone: "Asia/Kolkata"
 });
+
+/* ---------------- MANUAL REMINDER ROUTE ---------------- */
 
 app.get("/send-reminder", async (req, res) => {
-
-  const payload = JSON.stringify({
-    title: "TriVi Attendance Reminder",
-    body: "Please mark today's attendance."
-  });
-
-  for (const sub of subscriptions) {
-    try {
-      await webpush.sendNotification(
-        sub,
-        payload
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
+  await sendReminders();
   res.send("Reminder sent");
-
 });
 
 /* ---------------- START ---------------- */
 
 const PORT = process.env.PORT || 5000;
-
-/* ---------------- MANUAL REMINDER ROUTE ---------------- */
-
-app.get("/send-reminder", async (req, res) => {
-
-  const payload = JSON.stringify({
-    title: "TriVi Attendance Reminder",
-    body: "Please mark today's attendance."
-  });
-
-  for (const sub of subscriptions) {
-    try {
-      await webpush.sendNotification(sub, payload);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  res.send("Reminder sent");
-
-});
 
 app.listen(PORT, () => {
   console.log("🚀 Server running");
