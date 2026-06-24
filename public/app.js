@@ -42,6 +42,8 @@ async function submitAttendance() {
 
     submitBtn.disabled = true;
 
+    submitBtn.classList.add("loading-btn");
+
     submitBtn.innerText =
       "Submitting...";
   }
@@ -130,6 +132,8 @@ async function submitAttendance() {
     if (submitBtn) {
 
       submitBtn.disabled = false;
+
+      submitBtn.classList.remove("loading-btn");
 
       submitBtn.innerText =
         "Submit Attendance";
