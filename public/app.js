@@ -329,24 +329,15 @@ function urlBase64ToUint8Array(base64String) {
   return outputArray;
 }
 
-// REGISTER SERVICE WORKER
+// REGISTER SERVICE WORKER (no permission prompt on load)
 if ("serviceWorker" in navigator) {
-
   navigator.serviceWorker
     .register("/sw.js")
-    .then(() => {
-
-      console.log(
-        "Service Worker Registered"
-      );
-
-      subscribeUser();
-
-    });
-
+    .then(() => console.log("Service Worker Registered"))
+    .catch(err => console.log("SW registration failed", err));
 }
 
-// SUBSCRIBE USER
+// SUBSCRIBE USER (only after the user enables reminders)
 async function subscribeUser() {
 
   const registration =
@@ -373,6 +364,8 @@ async function subscribeUser() {
         "application/json"
     },
 
+    credentials: "include",
+
     body:
       JSON.stringify(subscription)
 
@@ -382,23 +375,56 @@ async function subscribeUser() {
 
 }
 
-// ASK PERMISSION
-if ("Notification" in window) {
+// ENABLE REMINDERS (runs on the user's click — required by modern browsers)
+async function enableReminders() {
 
-  Notification
-    .requestPermission()
-    .then(permission => {
+  const btn = document.getElementById("enableReminders");
 
-      if (
-        permission !== "granted"
-      ) {
+  if (
+    !("Notification" in window) ||
+    !("serviceWorker" in navigator)
+  ) {
+    if (btn) btn.innerText = "Reminders not supported";
+    return;
+  }
 
-        console.log(
-          "Permission denied"
-        );
+  try {
 
-      }
+    const permission =
+      await Notification.requestPermission();
 
-    });
+    if (permission !== "granted") {
+      if (btn) btn.innerText = "Reminders blocked";
+      return;
+    }
 
+    await subscribeUser();
+
+    if (btn) {
+      btn.innerText = "Reminders on";
+      btn.classList.add("on");
+    }
+
+  } catch (err) {
+    console.log(err);
+    if (btn) btn.innerText = "Couldn't enable reminders";
+  }
 }
+
+window.enableReminders = enableReminders;
+
+// Reflect the current permission state on the button at load
+(function reflectReminderState() {
+  const btn = document.getElementById("enableReminders");
+  if (!btn) return;
+
+  if (!("Notification" in window)) {
+    btn.style.display = "none";
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    btn.innerText = "Reminders on";
+    btn.classList.add("on");
+  }
+})();

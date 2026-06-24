@@ -26,4 +26,5 @@ const connectDB = async () => {
   }
 };
 
+connectDB.sanitizeUri = sanitizeUri;
 module.exports = connectDB;

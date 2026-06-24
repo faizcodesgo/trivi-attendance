@@ -8,6 +8,7 @@ const passport = require("passport");
 const webpush = require("web-push");
 const cron = require("node-cron");
 const helmet = require("helmet");
+const MongoStore = require("connect-mongo");
 
 require("./config/passport");
 
@@ -54,6 +55,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
+  // Persist sessions in MongoDB so a server restart doesn't log everyone out
+  // (keeps users signed in for the full 7 days).
+  store: MongoStore.create({
+    mongoUrl: connectDB.sanitizeUri(process.env.MONGO_URI),
+    ttl: 7 * 24 * 60 * 60
+  }),
   resave: false,
   saveUninitialized: false,
   cookie: {
@@ -247,9 +254,15 @@ cron.schedule("0 10 * * *", sendReminders, {
 
 /* ---------------- MANUAL REMINDER ROUTE ---------------- */
 
-app.get("/send-reminder", async (req, res) => {
-  await sendReminders();
-  res.send("Reminder sent");
+app.get("/send-reminder", (req, res) => {
+  // If CRON_SECRET is set, only allow callers that send the matching header
+  // (so only your cron-job.org job can trigger reminders).
+  if (process.env.CRON_SECRET && req.get("x-cron-secret") !== process.env.CRON_SECRET) {
+    return res.status(401).send("Unauthorized");
+  }
+  // Respond immediately, then push in the background so the request never hangs.
+  res.status(202).send("Reminder triggered");
+  sendReminders().catch(err => console.log(err));
 });
 
 /* ---------------- START ---------------- */

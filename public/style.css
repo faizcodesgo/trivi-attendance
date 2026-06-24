@@ -265,6 +265,18 @@ button:hover,
 }
 .logout-btn:hover{ background:rgba(107,26,31,.06); }
 
+.reminder-btn{
+  background:#0a5f5f;
+  color:#fff;
+}
+.reminder-btn:hover{ background:#084f4f; }
+.reminder-btn.on{
+  background:transparent;
+  color:var(--green);
+  border:1px solid rgba(47,158,84,.4);
+  pointer-events:none;
+}
+
 .upload-btn{
   display:block;
   text-align:center;
