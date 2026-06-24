@@ -42,7 +42,8 @@ app.use(
 /* ---------------- MIDDLEWARE ---------------- */
 
 app.use(cors({
-  origin: true,
+  // Same-origin app — only allow our own site to make credentialed calls.
+  origin: ["https://trivi-attendance.onrender.com"],
   credentials: true
 }));
 
@@ -68,7 +69,9 @@ app.use(passport.session());
 /* ---------------- DEBUG ---------------- */
 
 app.use((req, res, next) => {
-  console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
+  if (process.env.NODE_ENV !== "production") {
+    console.log("➡️", req.method, req.url, "| Auth:", req.isAuthenticated());
+  }
   next();
 });
 
@@ -179,7 +182,7 @@ app.get("/api/check-admin", ensureAuth, (req, res) => {
 
 /* ---------------- PUSH SUBSCRIBE ---------------- */
 
-app.post("/subscribe", async (req, res) => {
+app.post("/subscribe", ensureAuth, async (req, res) => {
 
   try {
 

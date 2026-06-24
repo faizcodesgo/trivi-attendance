@@ -94,6 +94,13 @@
     transition:border-color .2s ease;
   }
   .control-group input:focus{ border-color:var(--gold); }
+  /* Soften the native dd/mm/yyyy placeholder until a date is picked */
+  .control-group input[type="date"]::-webkit-datetime-edit{ color:var(--muted); }
+  .control-group input[type="date"].filled::-webkit-datetime-edit{ color:var(--ink); }
+  .control-group input[type="date"]::-webkit-calendar-picker-indicator{
+    cursor:pointer; opacity:.5; transition:opacity .2s ease;
+  }
+  .control-group input[type="date"]:hover::-webkit-calendar-picker-indicator{ opacity:.85; }
 
   .controls .btns{ display:flex; flex-wrap:wrap; gap:10px; margin-left:auto; }
   .controls button{
@@ -111,7 +118,7 @@
   .btn-load{ background:var(--navy); color:#fff; }
   .btn-apply{ background:var(--gold); color:var(--gold-ink); }
   .btn-reset{ background:transparent; color:var(--muted); border:1px solid var(--line) !important; }
-  .btn-export{ background:var(--teal); color:#fff; }
+  .btn-export{ background:#0a5f5f; color:#fff; }
 
   /* STATS */
   .stats{
@@ -488,6 +495,7 @@ function resetFilters() {
   document.getElementById("singleDate").value = "";
   document.getElementById("fromDate").value = "";
   document.getElementById("toDate").value = "";
+  syncDateFields();
   render(allData);
 }
 
@@ -606,6 +614,18 @@ window.openEdit = openEdit;
 window.saveEdit = saveEdit;
 window.resetModal = resetModal;
 window.loadData = loadData;
+
+// Soften the dd/mm/yyyy placeholder until a date is actually chosen
+function syncDateFields() {
+  document.querySelectorAll('.control-group input[type="date"]').forEach(inp => {
+    inp.classList.toggle("filled", !!inp.value);
+  });
+}
+document.querySelectorAll('.control-group input[type="date"]').forEach(inp => {
+  inp.addEventListener("change", syncDateFields);
+  inp.addEventListener("input", syncDateFields);
+});
+syncDateFields();
 
 // INITIAL LOAD
 loadData();

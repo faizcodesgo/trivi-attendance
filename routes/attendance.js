@@ -20,6 +20,20 @@ const upload = multer({
   }
 });
 
+// Wrap multer so upload errors (e.g. file too large) return JSON, not an HTML 500.
+function uploadSingle(req, res, next) {
+  upload.single("image")(req, res, (err) => {
+    if (err) {
+      const tooBig = err.code === "LIMIT_FILE_SIZE";
+      return res.status(400).json({
+        success: false,
+        message: tooBig ? "Image too large (max 5MB)" : "Image upload failed"
+      });
+    }
+    next();
+  });
+}
+
 // ---------------- AUTH ----------------
 function ensureAuth(req, res, next) {
   if (req.isAuthenticated()) return next();
@@ -36,7 +50,7 @@ function ensureAdmin(req, res, next) {
 }
 
 // ---------------- POST ----------------
-router.post("/", ensureAuth, upload.single("image"), async (req, res) => {
+router.post("/", ensureAuth, uploadSingle, async (req, res) => {
   try {
     const email = req.user?.emails?.[0]?.value;
     const name = req.user.displayName || "User";
@@ -114,17 +128,14 @@ if (req.file) {
   imageUrl = result.secure_url;
 }
 
+// Only overwrite the image when a new one was actually uploaded,
+// otherwise a same-day re-submit would wipe the existing photo.
+const updateDoc = { name, email, date, day, time, workTypes };
+if (imageUrl) updateDoc.imageUrl = imageUrl;
+
 const updated = await Attendance.findOneAndUpdate(
   { email, date },
-  {
-    name,
-    email,
-    date,
-    day,
-    time,
-    workTypes,
-    imageUrl
-  },
+  updateDoc,
   {
     new: true,
     upsert: true
@@ -179,17 +190,8 @@ router.get("/export/excel", ensureAuth, ensureAdmin, async (req, res) => {
     if (fromDate && toDate) {
 
   records = records.filter(r => {
-
-    const recordDate =
-      new Date(r.date)
-      .toISOString()
-      .split("T")[0];
-
-    return (
-      recordDate >= fromDate
-      &&
-      recordDate <= toDate
-    );
+    const recordDate = r.date;
+    return recordDate >= fromDate && recordDate <= toDate;
   });
 
 }
@@ -197,12 +199,7 @@ router.get("/export/excel", ensureAuth, ensureAdmin, async (req, res) => {
 else if (singleDate) {
 
   records = records.filter(r => {
-
-    const recordDate =
-      new Date(r.date)
-      .toISOString()
-      .split("T")[0];
-
+    const recordDate = r.date;
     return recordDate === singleDate;
   });
 }
@@ -351,7 +348,7 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
           timeZone: "Asia/Kolkata"
         })
       },
-      { new: true }
+      { new: true, runValidators: true }
     );
 
     res.json({
