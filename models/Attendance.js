@@ -9,6 +9,8 @@ const attendanceSchema = new mongoose.Schema(
     email: {
       type: String,
       required: true,
+      lowercase: true,
+      trim: true,
     },
     date: {
       type: String,

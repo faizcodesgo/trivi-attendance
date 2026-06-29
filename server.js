@@ -265,9 +265,9 @@ cron.schedule("0 10 * * *", sendReminders, {
 /* ---------------- MANUAL REMINDER ROUTE ---------------- */
 
 app.get("/send-reminder", (req, res) => {
-  // If CRON_SECRET is set, only allow callers that send the matching header
-  // (so only your cron-job.org job can trigger reminders).
-  if (process.env.CRON_SECRET && req.get("x-cron-secret") !== process.env.CRON_SECRET) {
+  // Always require the secret header. If CRON_SECRET isn't configured, refuse
+  // outright so a stranger can never trigger push notifications to everyone.
+  if (!process.env.CRON_SECRET || req.get("x-cron-secret") !== process.env.CRON_SECRET) {
     return res.status(401).send("Unauthorized");
   }
   // Respond immediately, then push in the background so the request never hangs.

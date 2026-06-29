@@ -11,6 +11,25 @@ const ExcelJS = require("exceljs");
 const Attendance = require("../models/Attendance");
 const allowedUsers = require("../config/allowedUsers");
 
+// The only work types we accept. Anything else is rejected before it can be
+// stored (defence-in-depth on top of the Mongoose enum).
+const ALLOWED_TYPES = [
+  "Work From Home",
+  "Office Management",
+  "Site Visit",
+  "Leave",
+  "Government Holiday"
+];
+
+const normEmail = (e) => String(e || "").toLowerCase().trim();
+
+// Coerce to an array and keep only allowed values (drops junk / injection).
+function cleanWorkTypes(raw) {
+  let wt = raw;
+  if (typeof wt === "string") wt = [wt];
+  return (wt || []).filter(Boolean).filter(t => ALLOWED_TYPES.includes(t));
+}
+
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -52,7 +71,7 @@ function ensureAdmin(req, res, next) {
 // ---------------- POST ----------------
 router.post("/", ensureAuth, uploadSingle, async (req, res) => {
   try {
-    const email = req.user?.emails?.[0]?.value;
+    const email = normEmail(req.user?.emails?.[0]?.value);
     const name = req.user.displayName || "User";
 
     const now = new Date();
@@ -66,25 +85,12 @@ router.post("/", ensureAuth, uploadSingle, async (req, res) => {
       timeZone: "Asia/Kolkata"
     });
 
-    let workTypes = req.body.workTypes;
-
-    if (!workTypes) {
-      return res.status(400).json({
-        success: false,
-        message: "Select at least one option"
-      });
-    }
-
-    if (typeof workTypes === "string") {
-      workTypes = [workTypes];
-    }
-
-    workTypes = workTypes.filter(Boolean);
+    const workTypes = cleanWorkTypes(req.body.workTypes);
 
     if (workTypes.length < 1) {
       return res.status(400).json({
         success: false,
-        message: "Select at least one option"
+        message: "Select at least one valid option"
       });
     }
 
@@ -138,7 +144,9 @@ const updated = await Attendance.findOneAndUpdate(
   updateDoc,
   {
     new: true,
-    upsert: true
+    upsert: true,
+    runValidators: true,
+    setDefaultsOnInsert: true
   }
 );
 
@@ -149,6 +157,11 @@ const updated = await Attendance.findOneAndUpdate(
     });
 
   } catch (err) {
+    // Double-tap submit can race two upserts on the same {email,date}.
+    // That's not an error for the user — their attendance is recorded.
+    if (err && err.code === 11000) {
+      return res.json({ success: true, message: "Already marked for today" });
+    }
     res.status(500).json({
       success: false,
       message: err.message
@@ -164,13 +177,12 @@ router.post("/bulk", ensureAuth, ensureAdmin, async (req, res) => {
   try {
     const Employee = require("../models/Employee");
 
-    let { date, workTypes, overwrite } = req.body;
+    let { date, overwrite } = req.body;
 
-    if (typeof workTypes === "string") workTypes = [workTypes];
-    workTypes = (workTypes || []).filter(Boolean);
+    const workTypes = cleanWorkTypes(req.body.workTypes);
 
     if (workTypes.length < 1) {
-      return res.status(400).json({ success: false, message: "Select at least one work type" });
+      return res.status(400).json({ success: false, message: "Select at least one valid work type" });
     }
     if (workTypes.length > 2) {
       return res.status(400).json({ success: false, message: "Only 2 selections allowed" });
@@ -198,26 +210,41 @@ router.post("/bulk", ensureAuth, ensureAdmin, async (req, res) => {
       });
     }
 
+    const emails = employees.map(e => normEmail(e.email));
+
+    // One query to find who already has an entry that day, then one bulkWrite.
+    const existingDocs = await Attendance.find(
+      { date, email: { $in: emails } },
+      { email: 1 }
+    );
+    const existingSet = new Set(existingDocs.map(r => r.email));
+
     let created = 0, updated = 0, skipped = 0;
+    const ops = [];
 
     for (const emp of employees) {
-      const existing = await Attendance.findOne({ email: emp.email, date });
+      const email = normEmail(emp.email);
+      const has = existingSet.has(email);
 
       // Default behaviour: don't touch people who already marked that day.
-      if (existing && !overwrite) {
+      if (has && !overwrite) {
         skipped++;
         continue;
       }
 
-      await Attendance.findOneAndUpdate(
-        { email: emp.email, date },
-        { name: emp.name, email: emp.email, date, day, time, workTypes },
-        { upsert: true, new: true }
-      );
-
-      if (existing) updated++;
+      if (has) updated++;
       else created++;
+
+      ops.push({
+        updateOne: {
+          filter: { email, date },
+          update: { $set: { name: emp.name, email, date, day, time, workTypes } },
+          upsert: true
+        }
+      });
     }
+
+    if (ops.length) await Attendance.bulkWrite(ops);
 
     res.json({
       success: true,
@@ -235,7 +262,7 @@ router.post("/bulk", ensureAuth, ensureAdmin, async (req, res) => {
 // Any logged-in employee can read ONLY their own attendance records.
 router.get("/mine", ensureAuth, async (req, res) => {
   try {
-    const email = req.user?.emails?.[0]?.value;
+    const email = normEmail(req.user?.emails?.[0]?.value);
     const data = await Attendance.find({ email }).sort({ date: -1 });
     res.json(data);
   } catch (err) {
@@ -247,8 +274,12 @@ router.get("/mine", ensureAuth, async (req, res) => {
 // Locked to admins — this powers the admin dashboard. Regular employees
 // must use /mine so they can never see other people's attendance.
 router.get("/", ensureAuth, ensureAdmin, async (req, res) => {
-  const data = await Attendance.find().sort({ date: -1 });
-  res.json(data);
+  try {
+    const data = await Attendance.find().sort({ date: -1 });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 // ---------------- EXPORT EXCEL ----------------
@@ -402,23 +433,12 @@ else if (singleDate) {
 // ---------------- UPDATE ----------------
 router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
   try {
-    let { workTypes } = req.body;
-
-    if (!workTypes) {
-      return res.status(400).json({
-        success: false,
-        message: "workTypes required"
-      });
-    }
-
-    if (typeof workTypes === "string") {
-      workTypes = [workTypes];
-    }
+    const workTypes = cleanWorkTypes(req.body.workTypes);
 
     if (workTypes.length < 1) {
       return res.status(400).json({
         success: false,
-        message: "Select at least one"
+        message: "Select at least one valid option"
       });
     }
 
@@ -455,11 +475,12 @@ router.put("/:id", ensureAuth, ensureAdmin, async (req, res) => {
 
 // ---------------- DELETE ----------------
 router.delete("/:id", ensureAuth, ensureAdmin, async (req, res) => {
-  await Attendance.findByIdAndDelete(req.params.id);
-
-  res.json({
-    success: true
-  });
+  try {
+    await Attendance.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
 });
 
 module.exports = router;

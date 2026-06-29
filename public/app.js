@@ -139,7 +139,7 @@ async function submitAttendance() {
       submitBtn.classList.remove("loading-btn");
 
       submitBtn.innerText =
-        "Submit Attendance";
+        "Mark Attendance";
     }
 
     if (loadingBox) {
@@ -390,6 +390,12 @@ function setNum(id, val) {
   requestAnimationFrame(tick);
 }
 
+// Escape anything from the database before putting it in HTML (prevents XSS).
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
 function renderFeed(records) {
   const feed = document.getElementById("feed");
   if (!feed) return;
@@ -400,11 +406,14 @@ function renderFeed(records) {
   }
 
   feed.innerHTML = records.slice(0, 12).map(r => {
-    const types = (r.workTypes || []).join(", ");
-    const dateLabel = `${r.day || ""} · ${r.date || ""}`;
-    const avatar = r.imageUrl
-      ? `<img class="feed-avatar" src="${r.imageUrl}" alt="">`
-      : `<div class="feed-avatar placeholder">${(types[0] || "•").toUpperCase()}</div>`;
+    const types = esc((r.workTypes || []).join(", "));
+    const dateLabel = `${esc(r.day)} · ${esc(r.date)}`;
+    const initial = esc(((r.workTypes || [])[0] || "•")[0].toUpperCase());
+    const img = r.imageUrl ? encodeURI(r.imageUrl) : "";
+    const avatar = img
+      ? `<img class="feed-avatar" src="${esc(img)}" alt="Attendance photo">`
+      : `<div class="feed-avatar placeholder">${initial}</div>`;
+    const time = r.time ? esc(r.time.replace(/:\d{2}\s/, " ")) : "";
     return `
       <div class="feed-item">
         ${avatar}
@@ -412,7 +421,7 @@ function renderFeed(records) {
           <div class="f-types">${types || "—"}</div>
           <div class="f-date">${dateLabel}</div>
         </div>
-        <div class="f-time">${r.time ? r.time.replace(/:\d{2}\s/, " ") : ""}</div>
+        <div class="f-time">${time}</div>
       </div>`;
   }).join("");
 }

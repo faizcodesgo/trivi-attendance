@@ -538,6 +538,13 @@ let allData = [];
 let editId = null;
 let rosterCount = 0;
 
+// Escape DB values before inserting into HTML (prevents stored XSS — an
+// employee's name/work type could otherwise inject script into this admin page).
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
 // Greeting (admin name + date)
 async function loadGreeting() {
   try {
@@ -599,23 +606,25 @@ function render(data) {
       else if (t.includes("Government")) stats.govt++;
     });
 
+    const img = item.imageUrl ? encodeURI(item.imageUrl) : "";
+    const id = esc(item._id);
     const row = document.createElement("tr");
     row.innerHTML = `
-      <td>${item.name || ""}</td>
-      <td>${item.date || ""}</td>
-      <td>${item.day || ""}</td>
-      <td>${item.time || ""}</td>
-      <td>${(item.workTypes || []).join(", ")}</td>
+      <td>${esc(item.name)}</td>
+      <td>${esc(item.date)}</td>
+      <td>${esc(item.day)}</td>
+      <td>${esc(item.time)}</td>
+      <td>${esc((item.workTypes || []).join(", "))}</td>
       <td>
         ${
-          item.imageUrl
-          ? `<img src="${item.imageUrl}" class="image-preview" onclick="openImage('${item.imageUrl}')">`
+          img
+          ? `<img src="${esc(img)}" class="image-preview" data-img="${esc(img)}" onclick="openImage(this.dataset.img)" alt="Attendance photo">`
           : "No Image"
         }
       </td>
       <td>
-        <button class="edit" onclick="openEdit('${item._id}')">Edit</button>
-        <button class="danger" onclick="deleteEntry('${item._id}')">Delete</button>
+        <button class="edit" onclick="openEdit('${id}')">Edit</button>
+        <button class="danger" onclick="deleteEntry('${id}')">Delete</button>
       </td>
     `;
     tbody.appendChild(row);
@@ -755,17 +764,12 @@ function applyFilters() {
     );
   }
 
+  // Stored dates are already "YYYY-MM-DD" strings, so compare directly.
   if (fromDate && toDate) {
-    filtered = filtered.filter(item => {
-      const itemDate = new Date(item.date).toISOString().split("T")[0];
-      return itemDate >= fromDate && itemDate <= toDate;
-    });
+    filtered = filtered.filter(item => item.date >= fromDate && item.date <= toDate);
   }
   else if (singleDate) {
-    filtered = filtered.filter(item => {
-      const itemDate = new Date(item.date).toISOString().split("T")[0];
-      return itemDate === singleDate;
-    });
+    filtered = filtered.filter(item => item.date === singleDate);
   }
 
   render(filtered);
