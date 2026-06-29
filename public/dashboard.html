@@ -223,6 +223,7 @@
   }
   table{ width:100%; border-collapse:collapse; min-width:760px; }
   th{
+    position:sticky; top:0; z-index:2;
     background:var(--cream-soft); padding:15px 14px;
     font-size:13px; font-weight:600; color:var(--water-deep);
     text-align:center; white-space:nowrap;
@@ -230,8 +231,10 @@
   th:first-child{ border-top-left-radius:12px; }
   th:last-child{ border-top-right-radius:12px; }
   td{ padding:14px; border-bottom:1px solid var(--line); text-align:center; color:var(--ink); font-size:14px; }
-  tr{ transition:background .2s ease; }
-  tbody tr:hover{ background:var(--cream-soft); }
+  tbody tr{ transition:background .18s ease, transform .18s ease; animation:rowIn .35s ease both; }
+  tbody tr:nth-child(even){ background:rgba(15,95,80,.025); }
+  tbody tr:hover{ background:var(--aqua-soft); }
+  @keyframes rowIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:translateY(0); } }
 
   .edit,.danger{
     border:none; padding:8px 14px; border-radius:10px;
@@ -636,16 +639,31 @@ function renderInsights(data) {
 function setNum(id, val, keepSuffix) {
   const el = document.getElementById(id);
   if (!el) return;
-  if (keepSuffix) {
-    const small = el.querySelector("small");
-    el.childNodes[0].nodeValue = val + " ";
-    if (small) el.appendChild(small);
-  } else {
-    el.innerText = val;
+
+  const target = Number(val) || 0;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const write = (n) => {
+    if (keepSuffix) {
+      const small = el.querySelector("small");
+      if (el.childNodes[0]) el.childNodes[0].nodeValue = n + " ";
+      if (small) el.appendChild(small);
+    } else {
+      el.innerText = n;
+    }
+  };
+
+  if (reduce || target === 0) { write(target); return; }
+
+  const dur = 650, start = performance.now();
+  function tick(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    write(Math.round(eased * target));
+    if (p < 1) requestAnimationFrame(tick);
+    else write(target);
   }
-  el.style.animation = "none";
-  void el.offsetWidth;
-  el.style.animation = "countPop .4s ease both";
+  requestAnimationFrame(tick);
 }
 
 // APPLY FILTERS (table only)

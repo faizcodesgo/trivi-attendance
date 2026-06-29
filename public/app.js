@@ -313,12 +313,21 @@ function setHeroStatus(records) {
   const today = istDateStr();
   const todayRec = records.find(r => r.date === today);
 
+  const banner = document.getElementById("doneBanner");
+  const bannerText = document.getElementById("doneBannerText");
+
   if (todayRec) {
     box.classList.add("done");
     txt.innerText = "Marked today · " + (todayRec.workTypes || []).join(", ");
+    if (banner) banner.style.display = "flex";
+    if (bannerText) {
+      bannerText.innerText =
+        "All set for today — marked as " + (todayRec.workTypes || []).join(", ") + ".";
+    }
   } else {
     box.classList.remove("done");
     txt.innerText = "Not marked yet today";
+    if (banner) banner.style.display = "none";
   }
 }
 
@@ -355,14 +364,30 @@ function renderMyStats(records) {
   setNum("statStreak", streak);
 }
 
+// Count-up tween (21st.dev "number ticker" feel).
 function setNum(id, val) {
   const el = document.getElementById(id);
-  if (el) {
-    el.innerText = val;
-    el.style.animation = "none";
-    void el.offsetWidth;
-    el.style.animation = "countPop .4s ease both";
+  if (!el) return;
+
+  const target = Number(val) || 0;
+  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (reduce || target === 0) {
+    el.innerText = target;
+    return;
   }
+
+  const dur = 650;
+  const start = performance.now();
+
+  function tick(now) {
+    const p = Math.min((now - start) / dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+    el.innerText = Math.round(eased * target);
+    if (p < 1) requestAnimationFrame(tick);
+    else el.innerText = target;
+  }
+  requestAnimationFrame(tick);
 }
 
 function renderFeed(records) {

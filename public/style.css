@@ -511,3 +511,84 @@ button:hover{ transform:translateY(-2px); }
   .login-right{ padding:28px 20px 40px; }
   .login-card{ padding:34px 26px; }
 }
+
+/* =========================
+   POLISH  (21st.dev-inspired micro-interactions)
+========================= */
+
+/* "all set" success banner on the employee page */
+.done-banner{
+  display:flex;
+  align-items:center;
+  gap:11px;
+  margin:0 4px 14px;
+  padding:13px 16px;
+  border-radius:15px;
+  font-size:14px;
+  font-weight:600;
+  color:#06402f;
+  background:linear-gradient(100deg,#d6fbed,#e9f9f1);
+  border:1px solid rgba(25,195,154,.35);
+  box-shadow:0 10px 28px rgba(15,95,80,.12);
+  animation:slideDown .5s cubic-bezier(.22,1,.36,1) both;
+}
+.done-banner .db-check{
+  width:26px;height:26px;flex-shrink:0;
+  border-radius:50%;
+  background:var(--aqua);
+  color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:700;
+}
+
+/* moving sheen across the hero card */
+.hero-card::before{
+  content:"";
+  position:absolute;
+  top:0; left:-60%;
+  width:55%; height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.10),transparent);
+  transform:skewX(-18deg);
+  animation:sheen 6s ease-in-out infinite;
+  pointer-events:none;
+}
+
+/* shine sweep on the primary (maroon) button hover */
+.submit-btn{ position:relative; overflow:hidden; }
+.submit-btn::after{
+  content:"";
+  position:absolute; top:0; left:-120%;
+  width:60%; height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);
+  transform:skewX(-18deg);
+  transition:left .6s ease;
+}
+.submit-btn:hover::after{ left:140%; }
+
+/* staggered entrance for the activity feed */
+.feed-item{ animation:fadeUp .5s ease both; }
+.feed-item:nth-child(1){ animation-delay:.04s; }
+.feed-item:nth-child(2){ animation-delay:.10s; }
+.feed-item:nth-child(3){ animation-delay:.16s; }
+.feed-item:nth-child(4){ animation-delay:.22s; }
+.feed-item:nth-child(5){ animation-delay:.28s; }
+.feed-item:nth-child(n+6){ animation-delay:.32s; }
+
+/* accessible focus rings */
+button:focus-visible,
+.upload-btn:focus-visible,
+input:focus-visible,
+a:focus-visible{
+  outline:none;
+  box-shadow:0 0 0 3px rgba(25,195,154,.45);
+  border-radius:12px;
+}
+
+@keyframes slideDown{
+  from{ opacity:0; transform:translateY(-10px); }
+  to{ opacity:1; transform:translateY(0); }
+}
+@keyframes sheen{
+  0%,72%{ left:-60%; }
+  100%{ left:130%; }
+}
