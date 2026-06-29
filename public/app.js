@@ -317,7 +317,7 @@ async function checkAdmin() {
     const greet = document.getElementById("greetName");
     if (greet && data.name) {
       const first = String(data.name).trim().split(" ")[0];
-      greet.innerText = `Hi, ${first} 👋`;
+      greet.innerText = `Hi, ${first}`;
     }
 
     if (data.isAdmin === true) {
@@ -419,30 +419,9 @@ function renderMyStats(records) {
   setNum("statStreak", streak);
 }
 
-// Count-up tween (21st.dev "number ticker" feel).
 function setNum(id, val) {
   const el = document.getElementById(id);
-  if (!el) return;
-
-  const target = Number(val) || 0;
-  const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  if (reduce || target === 0) {
-    el.innerText = target;
-    return;
-  }
-
-  const dur = 650;
-  const start = performance.now();
-
-  function tick(now) {
-    const p = Math.min((now - start) / dur, 1);
-    const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-    el.innerText = Math.round(eased * target);
-    if (p < 1) requestAnimationFrame(tick);
-    else el.innerText = target;
-  }
-  requestAnimationFrame(tick);
+  if (el) el.innerText = Number(val) || 0;
 }
 
 // Escape anything from the database before putting it in HTML (prevents XSS).
