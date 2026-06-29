@@ -98,7 +98,10 @@ async function submitAttendance() {
     }
 
     msg.innerText =
-      "Attendance submitted successfully";
+      "Attendance marked successfully ✓";
+
+    // Refresh the employee's own stats + feed right away.
+    if (typeof loadMine === "function") loadMine();
 
     document
       .querySelectorAll(
@@ -255,6 +258,13 @@ async function checkAdmin() {
 
     const data = await res.json();
 
+    // Personalised greeting (first name only).
+    const greet = document.getElementById("greetName");
+    if (greet && data.name) {
+      const first = String(data.name).trim().split(" ")[0];
+      greet.innerText = `Hi, ${first} 👋`;
+    }
+
     if (data.isAdmin === true) {
 
       const btn =
@@ -278,6 +288,127 @@ async function checkAdmin() {
 }
 
 // =========================
+// MY OWN ATTENDANCE (feed + honest stats + today's status)
+// =========================
+
+// Today's date in IST as YYYY-MM-DD (matches how the server stores it).
+function istDateStr(d) {
+  return (d || new Date()).toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+}
+
+function renderTodayDate() {
+  const el = document.getElementById("todayDate");
+  if (!el) return;
+  el.innerText = new Date().toLocaleDateString("en-IN", {
+    weekday: "long", day: "numeric", month: "long",
+    timeZone: "Asia/Kolkata"
+  });
+}
+
+function setHeroStatus(records) {
+  const box = document.getElementById("heroStatus");
+  const txt = document.getElementById("heroStatusText");
+  if (!box || !txt) return;
+
+  const today = istDateStr();
+  const todayRec = records.find(r => r.date === today);
+
+  if (todayRec) {
+    box.classList.add("done");
+    txt.innerText = "Marked today · " + (todayRec.workTypes || []).join(", ");
+  } else {
+    box.classList.remove("done");
+    txt.innerText = "Not marked yet today";
+  }
+}
+
+function renderMyStats(records) {
+  const today = new Date();
+  const monthKey = istDateStr(today).slice(0, 7); // YYYY-MM
+
+  // Start of current week (Monday) in IST.
+  const istNow = new Date(today.toLocaleString("en-US", { timeZone: "Asia/Kolkata" }));
+  const dow = (istNow.getDay() + 6) % 7; // 0 = Monday
+  const monday = new Date(istNow);
+  monday.setDate(istNow.getDate() - dow);
+  const mondayStr = istDateStr(monday);
+
+  const dates = new Set(records.map(r => r.date));
+
+  let monthCount = 0, weekCount = 0;
+  dates.forEach(d => {
+    if (d.slice(0, 7) === monthKey) monthCount++;
+    if (d >= mondayStr) weekCount++;
+  });
+
+  // Current streak: consecutive days up to today (or yesterday) that are marked.
+  let streak = 0;
+  const cursor = new Date(istNow);
+  if (!dates.has(istDateStr(cursor))) cursor.setDate(cursor.getDate() - 1); // allow "not yet today"
+  while (dates.has(istDateStr(cursor))) {
+    streak++;
+    cursor.setDate(cursor.getDate() - 1);
+  }
+
+  setNum("statMonth", monthCount);
+  setNum("statWeek", weekCount);
+  setNum("statStreak", streak);
+}
+
+function setNum(id, val) {
+  const el = document.getElementById(id);
+  if (el) {
+    el.innerText = val;
+    el.style.animation = "none";
+    void el.offsetWidth;
+    el.style.animation = "countPop .4s ease both";
+  }
+}
+
+function renderFeed(records) {
+  const feed = document.getElementById("feed");
+  if (!feed) return;
+
+  if (!records.length) {
+    feed.innerHTML = `<div class="feed-empty">No attendance yet — mark your first day above.</div>`;
+    return;
+  }
+
+  feed.innerHTML = records.slice(0, 12).map(r => {
+    const types = (r.workTypes || []).join(", ");
+    const dateLabel = `${r.day || ""} · ${r.date || ""}`;
+    const avatar = r.imageUrl
+      ? `<img class="feed-avatar" src="${r.imageUrl}" alt="">`
+      : `<div class="feed-avatar placeholder">${(types[0] || "•").toUpperCase()}</div>`;
+    return `
+      <div class="feed-item">
+        ${avatar}
+        <div class="feed-main">
+          <div class="f-types">${types || "—"}</div>
+          <div class="f-date">${dateLabel}</div>
+        </div>
+        <div class="f-time">${r.time ? r.time.replace(/:\d{2}\s/, " ") : ""}</div>
+      </div>`;
+  }).join("");
+}
+
+async function loadMine() {
+  try {
+    const res = await fetch("/attendance/mine", { credentials: "include" });
+    const data = await res.json();
+    const records = Array.isArray(data) ? data : [];
+
+    setHeroStatus(records);
+    renderMyStats(records);
+    renderFeed(records);
+  } catch (err) {
+    console.log("Failed to load my attendance", err);
+    const feed = document.getElementById("feed");
+    if (feed) feed.innerHTML = `<div class="feed-empty">Couldn't load your attendance.</div>`;
+  }
+}
+
+// =========================
 // DASHBOARD
 // =========================
 
@@ -291,7 +422,9 @@ function goDashboard() {
 // INITIALIZE
 // =========================
 
+renderTodayDate();
 checkAdmin();
+loadMine();
 
 /* =========================
    PUSH NOTIFICATIONS

@@ -156,8 +156,22 @@ const updated = await Attendance.findOneAndUpdate(
   }
 });
 
-// ---------------- GET ----------------
-router.get("/", ensureAuth, async (req, res) => {
+// ---------------- GET MY OWN ----------------
+// Any logged-in employee can read ONLY their own attendance records.
+router.get("/mine", ensureAuth, async (req, res) => {
+  try {
+    const email = req.user?.emails?.[0]?.value;
+    const data = await Attendance.find({ email }).sort({ date: -1 });
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// ---------------- GET ALL (admin only) ----------------
+// Locked to admins — this powers the admin dashboard. Regular employees
+// must use /mine so they can never see other people's attendance.
+router.get("/", ensureAuth, ensureAdmin, async (req, res) => {
   const data = await Attendance.find().sort({ date: -1 });
   res.json(data);
 });

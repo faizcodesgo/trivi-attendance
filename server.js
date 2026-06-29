@@ -182,7 +182,9 @@ app.get("/api/check-admin", ensureAuth, (req, res) => {
   const email = req.user.emails?.[0]?.value;
 
   res.json({
-    isAdmin: allowedUsers.includes(email)
+    isAdmin: allowedUsers.includes(email),
+    name: req.user.displayName || "there",
+    email
   });
 
 });

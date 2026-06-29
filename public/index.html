@@ -7,104 +7,109 @@
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="/trivi-favicon-96.png">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0b2433">
+  <meta name="theme-color" content="#0b3a32">
 </head>
 
 <body>
 
-<div class="split-container">
+<div class="app-shell">
 
-  <!-- LEFT SIDE -->
-  <div class="left-panel">
-    <div class="left-content">
-
-      <img src="trivi-logo.png" alt="TriVi Infracons" class="hero-logo">
-
-      <h1>Welcome</h1>
-
-      <p class="hero-text">
-        Employee attendance system for TriVi Infracons Pvt Ltd
-        <span class="by">Lake rejuvenation &amp; watershed engineering</span>
-      </p>
-
-      <!-- real lake-rejuvenation photo from triviinfra.com -->
-      <img class="hero-art" src="trivi-lake.jpg" alt="A TriVi-rejuvenated lake set in green hills">
-      <span class="hero-caption">A lake rejuvenated by TriVi</span>
-
-    </div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <img src="trivi-logo.png" alt="TriVi Infracons" class="brand-logo">
+    <span class="brand-name">TriVi Infracons</span>
+    <a href="/auth/logout" style="margin-left:auto;text-decoration:none;">
+      <button class="top-logout">Logout</button>
+    </a>
   </div>
 
-  <!-- RIGHT SIDE -->
-  <div class="right-panel">
-    <div class="form-box">
+  <!-- GREETING -->
+  <div class="greeting">
+    <h1 id="greetName">Hi there 👋</h1>
+    <div class="date" id="todayDate">—</div>
+  </div>
 
-      <!-- HEADER -->
-      <div class="header">
-        <img src="trivi-logo.png" alt="TriVi Infracons" class="logo">
-        <h2>Mark your attendance</h2>
-        <p>Select your work type for today</p>
-      </div>
+  <!-- HERO: MARK ATTENDANCE -->
+  <div class="hero-card">
 
-      <!-- CHECKBOXES -->
-      <div class="checkboxes">
-        <label class="checkbox-item">
-          <input type="checkbox" name="workTypes" value="Work From Home">
-          <span>Work From Home</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="workTypes" value="Office Management">
-          <span>Office Management</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="workTypes" value="Site Visit">
-          <span>Site Visit</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="workTypes" value="Leave">
-          <span>Leave</span>
-        </label>
-        <label class="checkbox-item">
-          <input type="checkbox" name="workTypes" value="Government Holiday">
-          <span>Government Holiday</span>
-        </label>
-      </div>
+    <span class="hero-status" id="heroStatus">
+      <span class="dot"></span>
+      <span id="heroStatusText">Not marked yet today</span>
+    </span>
 
-      <!-- IMAGE -->
-      <label for="image" class="upload-btn">Upload Image</label>
-      <input type="file" id="image" accept="image/*" hidden>
+    <h2>Mark today's attendance</h2>
+    <p class="hero-sub">Select your work type for today (up to 2)</p>
 
-      <div id="imageName" class="image-name">No image selected</div>
-
-      <div id="loadingBox" class="loading-box" style="display:none;">
-        <div class="lb-row">
-          <span class="spinner"></span>
-          <span>Uploading image…</span>
-        </div>
-        <div class="progress"><span></span></div>
-      </div>
-
-      <!-- BUTTONS -->
-      <button id="submitBtn" onclick="submitAttendance()" class="submit-btn">
-        Submit Attendance
-      </button>
-
-      <button onclick="resetForm()" class="reset-btn">Reset</button>
-
-      <button id="dashboardBtn" onclick="goDashboard()" class="dashboard-btn" style="display:none;">
-        Open Dashboard
-      </button>
-
-      <button id="enableReminders" onclick="enableReminders()" class="reminder-btn">
-        Enable reminders
-      </button>
-
-      <a href="/auth/logout" style="text-decoration:none;">
-        <button class="logout-btn">Logout</button>
-      </a>
-
-      <p id="msg"></p>
-
+    <!-- WORK TYPES -->
+    <div class="checkboxes">
+      <label class="checkbox-item">
+        <input type="checkbox" name="workTypes" value="Work From Home">
+        <span>Work From Home</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="workTypes" value="Office Management">
+        <span>Office Management</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="workTypes" value="Site Visit">
+        <span>Site Visit</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="workTypes" value="Leave">
+        <span>Leave</span>
+      </label>
+      <label class="checkbox-item">
+        <input type="checkbox" name="workTypes" value="Government Holiday">
+        <span>Government Holiday</span>
+      </label>
     </div>
+
+    <!-- IMAGE -->
+    <label for="image" class="upload-btn">📷 Upload Image (optional)</label>
+    <input type="file" id="image" accept="image/*" hidden>
+    <div id="imageName" class="image-name">No image selected</div>
+
+    <div id="loadingBox" class="loading-box" style="display:none;">
+      <div class="lb-row">
+        <span class="spinner"></span>
+        <span>Uploading image…</span>
+      </div>
+      <div class="progress"><span></span></div>
+    </div>
+
+    <!-- PRIMARY ACTION -->
+    <button id="submitBtn" onclick="submitAttendance()" class="submit-btn">
+      Mark Attendance
+    </button>
+    <button onclick="resetForm()" class="reset-btn">Reset</button>
+
+    <p id="msg"></p>
+  </div>
+
+  <!-- STAT TILES (honest counts from own records) -->
+  <div class="stat-tiles">
+    <div class="tile"><div class="t-num" id="statMonth">0</div><div class="t-label">Days this month</div></div>
+    <div class="tile"><div class="t-num" id="statWeek">0</div><div class="t-label">Days this week</div></div>
+    <div class="tile"><div class="t-num" id="statStreak">0</div><div class="t-label">Day streak</div></div>
+  </div>
+
+  <!-- MY RECENT ATTENDANCE -->
+  <div class="section-title">
+    <h3>Your recent attendance</h3>
+    <span class="hint">Only visible to you</span>
+  </div>
+  <div class="feed" id="feed">
+    <div class="feed-empty">Loading your attendance…</div>
+  </div>
+
+  <!-- SECONDARY ACTIONS -->
+  <div class="below-actions">
+    <button id="dashboardBtn" onclick="goDashboard()" class="dashboard-btn" style="display:none;">
+      Open Admin Dashboard
+    </button>
+    <button id="enableReminders" onclick="enableReminders()" class="reminder-btn">
+      Enable reminders
+    </button>
   </div>
 
 </div>
