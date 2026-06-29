@@ -78,6 +78,23 @@ async function submitAttendance() {
 
   try {
 
+    // Site Visit requires on-site proof: a photo + GPS location.
+    const isSite = Array.from(checked).some(cb => cb.value === "Site Visit");
+    if (isSite) {
+      if (!(imageInput && imageInput.files[0])) {
+        msg.innerText = "Site Visit needs a photo taken on site.";
+        return;
+      }
+      try {
+        const pos = await getLocation();
+        formData.append("lat", pos.lat);
+        formData.append("lng", pos.lng);
+      } catch (e) {
+        msg.innerText = "Site Visit needs your location. Please allow location access and try again.";
+        return;
+      }
+    }
+
     const res = await fetch("/attendance", {
 
       method: "POST",
@@ -151,6 +168,37 @@ async function submitAttendance() {
 }
 
 // =========================
+// GEOLOCATION (for Site Visit proof)
+// =========================
+
+function getLocation() {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) return reject(new Error("Geolocation not supported"));
+    navigator.geolocation.getCurrentPosition(
+      pos => resolve({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      err => reject(err),
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    );
+  });
+}
+
+// Site Visit needs a live camera photo + location — reflect that in the UI.
+function updateSiteVisitUI() {
+  const site = document.querySelector('input[name="workTypes"][value="Site Visit"]');
+  const on = !!(site && site.checked);
+  const up = document.getElementById("uploadBtn");
+  const note = document.getElementById("proofNote");
+  const img = document.getElementById("image");
+
+  if (img) {
+    if (on) img.setAttribute("capture", "environment");
+    else img.removeAttribute("capture");
+  }
+  if (up) up.innerText = on ? "📷 Take site photo (required)" : "📷 Upload Image (optional)";
+  if (note) note.style.display = on ? "block" : "none";
+}
+
+// =========================
 // STRICT LIMIT
 // =========================
 
@@ -175,8 +223,12 @@ document
         "Only 2 selections allowed"
       );
     }
+
+    updateSiteVisitUI();
   });
 });
+
+updateSiteVisitUI();
 
 // =========================
 // IMAGE PREVIEW
@@ -239,6 +291,8 @@ function resetForm() {
 
     msg.innerText = "";
   }
+
+  updateSiteVisitUI();
 }
 
 // =========================

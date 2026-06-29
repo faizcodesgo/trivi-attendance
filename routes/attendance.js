@@ -101,6 +101,27 @@ router.post("/", ensureAuth, uploadSingle, async (req, res) => {
       });
     }
 
+    // Site Visit requires proof of presence: a photo + GPS location.
+    const isSiteVisit = workTypes.includes("Site Visit");
+    const lat = parseFloat(req.body.lat);
+    const lng = parseFloat(req.body.lng);
+    const hasLocation = Number.isFinite(lat) && Number.isFinite(lng);
+
+    if (isSiteVisit) {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "Site Visit needs a photo taken on site."
+        });
+      }
+      if (!hasLocation) {
+        return res.status(400).json({
+          success: false,
+          message: "Site Visit needs your location. Please allow location access and try again."
+        });
+      }
+    }
+
     let imageUrl = null;
 
 if (req.file) {
@@ -138,6 +159,7 @@ if (req.file) {
 // otherwise a same-day re-submit would wipe the existing photo.
 const updateDoc = { name, email, date, day, time, workTypes };
 if (imageUrl) updateDoc.imageUrl = imageUrl;
+if (hasLocation) updateDoc.location = { lat, lng };
 
 const updated = await Attendance.findOneAndUpdate(
   { email, date },
@@ -275,7 +297,30 @@ router.get("/mine", ensureAuth, async (req, res) => {
 // must use /mine so they can never see other people's attendance.
 router.get("/", ensureAuth, ensureAdmin, async (req, res) => {
   try {
-    const data = await Attendance.find().sort({ date: -1 });
+    const { search = "", singleDate = "", fromDate = "", toDate = "", month = "", all = "" } = req.query;
+
+    const q = {};
+
+    // Date scope. Default to the current month so the dashboard stays fast as
+    // history grows; `all=1` loads everything; a search with no date searches
+    // all-time so you can find anyone.
+    if (all !== "1") {
+      if (fromDate && toDate) q.date = { $gte: fromDate, $lte: toDate };
+      else if (singleDate) q.date = singleDate;
+      else if (/^\d{4}-\d{2}$/.test(month)) q.date = { $gte: month + "-01", $lte: month + "-31" };
+      else if (!search) {
+        const m = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }).slice(0, 7);
+        q.date = { $gte: m + "-01", $lte: m + "-31" };
+      }
+    }
+
+    if (search) {
+      const safe = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const rx = new RegExp(safe, "i");
+      q.$or = [{ name: rx }, { email: rx }];
+    }
+
+    const data = await Attendance.find(q).sort({ date: -1 }).limit(2000);
     res.json(data);
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -333,7 +378,7 @@ else if (singleDate) {
     });
 
     // Column widths
-    const widths = [24, 32, 14, 12, 14, 34, 16];
+    const widths = [24, 32, 14, 12, 14, 34, 16, 20];
     widths.forEach((w, i) => {
       worksheet.getColumn(i + 1).width = w;
     });
@@ -342,7 +387,7 @@ else if (singleDate) {
     const borderAll = { top: thin, left: thin, bottom: thin, right: thin };
 
     // ---- TITLE BANNER (row 1) ----
-    worksheet.mergeCells("A1:G1");
+    worksheet.mergeCells("A1:H1");
     const titleCell = worksheet.getCell("A1");
     titleCell.value = "TriVi Infracons  —  Attendance Report";
     titleCell.font = { name: "Calibri", size: 16, bold: true, color: { argb: "FFFFFFFF" } };
@@ -351,7 +396,7 @@ else if (singleDate) {
     worksheet.getRow(1).height = 30;
 
     // ---- SUBTITLE (row 2) ----
-    worksheet.mergeCells("A2:G2");
+    worksheet.mergeCells("A2:H2");
     const subCell = worksheet.getCell("A2");
     subCell.value =
       `Exported ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}   •   ${records.length} record(s)`;
@@ -361,7 +406,7 @@ else if (singleDate) {
 
     // ---- HEADER ROW (row 3) ----
     const headerRow = worksheet.getRow(3);
-    headerRow.values = ["Name", "Email", "Date", "Day", "Time", "Work Type", "Image"];
+    headerRow.values = ["Name", "Email", "Date", "Day", "Time", "Work Type", "Image", "Location"];
     headerRow.height = 22;
     headerRow.eachCell((cell) => {
       cell.font = { name: "Calibri", bold: true, color: { argb: "FF3A2A08" } };
@@ -372,6 +417,7 @@ else if (singleDate) {
 
     // ---- DATA ROWS (row 4 onward) ----
     records.forEach((item, idx) => {
+      const hasLoc = item.location && item.location.lat != null && item.location.lng != null;
       const row = worksheet.addRow([
         item.name || "",
         item.email || "",
@@ -379,7 +425,8 @@ else if (singleDate) {
         item.day || "",
         item.time || "",
         (item.workTypes || []).join(", "),
-        item.imageUrl ? "View Image" : "No Image"
+        item.imageUrl ? "View Image" : "No Image",
+        hasLoc ? "View Map" : ""
       ]);
 
       row.height = 20;
@@ -400,10 +447,20 @@ else if (singleDate) {
         imageCell.value = { text: "View Image", hyperlink: item.imageUrl };
         imageCell.font = { name: "Calibri", color: { argb: "FF0A5C8A" }, underline: true };
       }
+
+      // Clickable map link (Site Visit GPS proof)
+      if (hasLoc) {
+        const locCell = row.getCell(8);
+        locCell.value = {
+          text: "View Map",
+          hyperlink: `https://www.google.com/maps?q=${item.location.lat},${item.location.lng}`
+        };
+        locCell.font = { name: "Calibri", color: { argb: "FF0A5C8A" }, underline: true };
+      }
     });
 
     // Filter dropdowns on the header row
-    worksheet.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: 7 } };
+    worksheet.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: 8 } };
 
     const fileName = `attendance-${Date.now()}.xlsx`;
 
@@ -427,6 +484,114 @@ else if (singleDate) {
       success: false,
       message: err.message
     });
+  }
+});
+
+// ---------------- MONTHLY SUMMARY (admin) ----------------
+// Per-employee totals for a month (payroll-style). Includes everyone on the
+// roster (0 if they marked nothing), plus anyone with records but not on it.
+function monthSummaryRows(records, roster) {
+  const map = {};
+  roster.forEach(e => {
+    const k = normEmail(e.email);
+    map[k] = { name: e.name, email: e.email, days: 0, wfh: 0, office: 0, site: 0, leave: 0, govt: 0 };
+  });
+  records.forEach(r => {
+    const k = normEmail(r.email);
+    if (!map[k]) map[k] = { name: r.name || "—", email: r.email, days: 0, wfh: 0, office: 0, site: 0, leave: 0, govt: 0 };
+    map[k].days++;
+    (r.workTypes || []).forEach(t => {
+      if (t.includes("Work From Home")) map[k].wfh++;
+      else if (t.includes("Office")) map[k].office++;
+      else if (t.includes("Site")) map[k].site++;
+      else if (t.includes("Leave")) map[k].leave++;
+      else if (t.includes("Government")) map[k].govt++;
+    });
+  });
+  return Object.values(map).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+}
+
+function resolveMonth(q) {
+  if (/^\d{4}-\d{2}$/.test(q || "")) return q;
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" }).slice(0, 7);
+}
+
+router.get("/summary", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+    const Employee = require("../models/Employee");
+    const month = resolveMonth(req.query.month);
+    const records = await Attendance.find({ date: { $gte: month + "-01", $lte: month + "-31" } });
+    const roster = await Employee.find();
+    res.json({ month, rows: monthSummaryRows(records, roster) });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+router.get("/summary/excel", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+    const Employee = require("../models/Employee");
+    const month = resolveMonth(req.query.month);
+    const records = await Attendance.find({ date: { $gte: month + "-01", $lte: month + "-31" } });
+    const roster = await Employee.find();
+    const rows = monthSummaryRows(records, roster);
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "TriVi Infracons";
+    const ws = workbook.addWorksheet("Monthly Summary", { views: [{ state: "frozen", ySplit: 3 }] });
+
+    const widths = [26, 32, 14, 10, 10, 10, 10, 14];
+    widths.forEach((w, i) => (ws.getColumn(i + 1).width = w));
+
+    const thin = { style: "thin", color: { argb: "FFD9E3EA" } };
+    const borderAll = { top: thin, left: thin, bottom: thin, right: thin };
+
+    ws.mergeCells("A1:H1");
+    const title = ws.getCell("A1");
+    title.value = `TriVi Infracons  —  Monthly Summary (${month})`;
+    title.font = { name: "Calibri", size: 16, bold: true, color: { argb: "FFFFFFFF" } };
+    title.alignment = { vertical: "middle", horizontal: "center" };
+    title.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0B3A32" } };
+    ws.getRow(1).height = 30;
+
+    ws.mergeCells("A2:H2");
+    const sub = ws.getCell("A2");
+    sub.value = `Exported ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}   •   ${rows.length} employee(s)`;
+    sub.font = { name: "Calibri", size: 10, italic: true, color: { argb: "FF5B6B76" } };
+    sub.alignment = { vertical: "middle", horizontal: "center" };
+    ws.getRow(2).height = 18;
+
+    const header = ws.getRow(3);
+    header.values = ["Name", "Email", "Days Present", "WFH", "Office", "Site", "Leave", "Govt Holiday"];
+    header.height = 22;
+    header.eachCell(cell => {
+      cell.font = { name: "Calibri", bold: true, color: { argb: "FFFFFFFF" } };
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF0F5F50" } };
+      cell.alignment = { vertical: "middle", horizontal: "center" };
+      cell.border = borderAll;
+    });
+
+    rows.forEach((r, idx) => {
+      const row = ws.addRow([r.name, r.email, r.days, r.wfh, r.office, r.site, r.leave, r.govt]);
+      row.height = 20;
+      const band = idx % 2 === 0 ? "FFFFFFFF" : "FFF1F7F5";
+      row.eachCell(cell => {
+        cell.alignment = { vertical: "middle", horizontal: "center" };
+        cell.border = borderAll;
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: band } };
+        cell.font = { name: "Calibri", color: { argb: "FF0C2B26" } };
+      });
+    });
+
+    ws.autoFilter = { from: { row: 3, column: 1 }, to: { row: 3, column: 8 } };
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename=summary-${month}.xlsx`);
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

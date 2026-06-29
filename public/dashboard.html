@@ -187,6 +187,19 @@
   .chip-card .c-label{ font-size:12px; color:var(--muted); font-weight:500; }
   .chip-card .c-num{ font-family:var(--font-head); font-size:24px; font-weight:600; color:var(--water-deep); margin-top:4px; }
 
+  /* absent today */
+  .absent-list{ display:flex; flex-wrap:wrap; gap:8px; }
+  .absent-chip{ font-size:13px; font-weight:500; color:var(--maroon); background:rgba(107,26,31,.07); border:1px solid rgba(107,26,31,.18); padding:7px 12px; border-radius:999px; }
+  .absent-empty{ color:var(--muted); font-size:13.5px; }
+
+  /* monthly summary table */
+  .sum-table{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  .sum-table th{ position:sticky; top:0; background:var(--cream-soft); padding:10px 8px; color:var(--water-deep); font-weight:600; text-align:center; }
+  .sum-table th:first-child, .sum-table td:first-child{ text-align:left; }
+  .sum-table td{ padding:9px 8px; border-bottom:1px solid var(--line); text-align:center; }
+  .sum-table tbody tr:nth-child(even){ background:rgba(15,95,80,.025); }
+  .sum-wrap{ max-height:46vh; overflow:auto; border:1px solid var(--line); border-radius:12px; }
+
   /* FILTER BAR */
   .controls{
     display:flex; flex-wrap:wrap; align-items:flex-end; gap:14px;
@@ -254,6 +267,8 @@
 
   .image-preview{ width:46px; height:46px; object-fit:cover; border-radius:10px; cursor:pointer; transition:transform .2s ease; }
   .image-preview:hover{ transform:scale(1.08); }
+  .map-pin{ display:inline-block; margin-top:6px; font-size:12px; font-weight:600; color:var(--water); text-decoration:none; white-space:nowrap; }
+  .map-pin:hover{ text-decoration:underline; }
 
   /* MODALS */
   .modal{
@@ -344,6 +359,7 @@
         <p id="adminDate">Here's your team today</p>
       </div>
       <div class="head-actions">
+        <button class="ha-btn ha-secondary" onclick="openSummary()">Monthly report</button>
         <button class="ha-btn ha-secondary" onclick="openEmployees()">Employees</button>
         <button class="ha-btn ha-primary" onclick="openBulk()">Mark everyone</button>
       </div>
@@ -367,9 +383,9 @@
         <div class="ov-sub">on record</div>
       </div>
       <div class="ov-card">
-        <div class="ov-label">Total entries</div>
+        <div class="ov-label">Entries shown</div>
         <div class="ov-num" id="total">0</div>
-        <div class="ov-sub">all time</div>
+        <div class="ov-sub">current view</div>
       </div>
     </div>
 
@@ -387,6 +403,13 @@
           <div class="live-empty">No records yet.</div>
         </div>
       </div>
+    </div>
+
+    <!-- ABSENT TODAY -->
+    <div class="panel" id="absentPanel" style="margin-bottom:22px;">
+      <h3>Absent today</h3>
+      <div class="panel-sub" id="absentSub">Who hasn't marked yet</div>
+      <div id="absentList" class="absent-list"></div>
     </div>
 
     <!-- TYPE BREAKDOWN -->
@@ -417,7 +440,7 @@
         <input type="date" id="toDate">
       </div>
       <div class="btns">
-        <button class="btn-load" onclick="loadData()">Load All</button>
+        <button class="btn-load" onclick="loadData('all=1')">Load all-time</button>
         <button class="btn-apply" onclick="applyFilters()">Apply</button>
         <button class="btn-reset" onclick="resetFilters()">Reset</button>
         <button class="btn-export" onclick="exportExcel()">Excel Export</button>
@@ -532,11 +555,46 @@
   </div>
 </div>
 
+<!-- MONTHLY SUMMARY MODAL -->
+<div class="modal" id="summaryModal">
+  <div class="modal-content" style="max-width:760px;">
+    <h3>Monthly summary</h3>
+    <p style="color:var(--muted);font-size:13px;margin:4px 0 14px;">Days present and work-type counts per employee.</p>
+
+    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;margin-bottom:14px;">
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <label style="font-size:12px;color:var(--muted);font-weight:500;">Month</label>
+        <input type="month" id="summaryMonth" style="padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--cream-soft);color:var(--ink);">
+      </div>
+      <button class="m-save" style="width:auto;margin:0;padding:10px 16px;" onclick="loadSummary()">View</button>
+      <button style="width:auto;margin:0;padding:10px 16px;border:none;border-radius:10px;color:#fff;background:var(--water);cursor:pointer;font-weight:600;" onclick="exportSummary()">Export Excel</button>
+    </div>
+
+    <div id="summaryMsg" style="font-size:13px;color:var(--muted);margin-bottom:8px;">Loading…</div>
+
+    <div class="sum-wrap">
+      <table class="sum-table">
+        <thead>
+          <tr><th>Name</th><th>Days</th><th>WFH</th><th>Office</th><th>Site</th><th>Leave</th><th>Govt</th></tr>
+        </thead>
+        <tbody id="summaryBody"></tbody>
+      </table>
+    </div>
+
+    <div class="modal-actions">
+      <button class="m-reset" onclick="closeSummary()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 let allData = [];
 let editId = null;
 let rosterCount = 0;
+let rosterList = [];
+
+const lc = s => String(s || "").toLowerCase().trim();
 
 // Escape DB values before inserting into HTML (prevents stored XSS — an
 // employee's name/work type could otherwise inject script into this admin page).
@@ -568,17 +626,20 @@ function istDateStr(d) {
 }
 
 // LOAD DATA
-async function loadData() {
+async function loadData(qs) {
   try {
     const loader = document.getElementById("tableLoader");
     if(loader){ loader.style.display = "flex"; }
 
-    const res = await fetch("/attendance", { credentials: "include" });
+    // No query = current month (server default), keeping the dashboard fast.
+    const url = "/attendance" + (qs ? ("?" + qs) : "");
+    const res = await fetch(url, { credentials: "include" });
     const data = await res.json();
 
     allData = Array.isArray(data) ? data : [];
     render(allData);
     renderInsights(allData);
+    updateAbsent();
 
     if(loader){ loader.style.display = "none"; }
   } catch (err) {
@@ -608,6 +669,8 @@ function render(data) {
 
     const img = item.imageUrl ? encodeURI(item.imageUrl) : "";
     const id = esc(item._id);
+    const loc = item.location && item.location.lat != null && item.location.lng != null ? item.location : null;
+    const mapLink = loc ? `https://www.google.com/maps?q=${loc.lat},${loc.lng}` : "";
     const row = document.createElement("tr");
     row.innerHTML = `
       <td>${esc(item.name)}</td>
@@ -619,8 +682,9 @@ function render(data) {
         ${
           img
           ? `<img src="${esc(img)}" class="image-preview" data-img="${esc(img)}" onclick="openImage(this.dataset.img)" alt="Attendance photo">`
-          : "No Image"
+          : "No photo"
         }
+        ${ loc ? `<a class="map-pin" href="${esc(mapLink)}" target="_blank" rel="noopener">📍 Map</a>` : "" }
       </td>
       <td>
         <button class="edit" onclick="openEdit('${id}')">Edit</button>
@@ -749,30 +813,34 @@ function setNum(id, val, keepSuffix) {
 }
 
 // APPLY FILTERS (table only)
-function applyFilters() {
-  const search = document.getElementById("searchInput").value.toLowerCase();
+// Filtering happens on the SERVER (scales as history grows). A search with no
+// date searches all-time; date filters scope by range/day.
+async function applyFilters() {
+  const search = document.getElementById("searchInput").value;
   const singleDate = document.getElementById("singleDate").value;
   const fromDate = document.getElementById("fromDate").value;
   const toDate = document.getElementById("toDate").value;
 
-  let filtered = [...allData];
+  const params = new URLSearchParams();
+  if (search) params.append("search", search);
+  if (singleDate) params.append("singleDate", singleDate);
+  if (fromDate) params.append("fromDate", fromDate);
+  if (toDate) params.append("toDate", toDate);
 
-  if (search) {
-    filtered = filtered.filter(item =>
-      (item.name || "").toLowerCase().includes(search) ||
-      (item.email || "").toLowerCase().includes(search)
-    );
-  }
+  try {
+    const loader = document.getElementById("tableLoader");
+    if (loader) loader.style.display = "flex";
 
-  // Stored dates are already "YYYY-MM-DD" strings, so compare directly.
-  if (fromDate && toDate) {
-    filtered = filtered.filter(item => item.date >= fromDate && item.date <= toDate);
-  }
-  else if (singleDate) {
-    filtered = filtered.filter(item => item.date === singleDate);
-  }
+    const res = await fetch("/attendance?" + params.toString(), { credentials: "include" });
+    const data = await res.json();
 
-  render(filtered);
+    allData = Array.isArray(data) ? data : [];
+    render(allData);
+
+    if (loader) loader.style.display = "none";
+  } catch (err) {
+    console.log("Filter failed", err);
+  }
 }
 
 // RESET FILTERS
@@ -782,7 +850,7 @@ function resetFilters() {
   document.getElementById("fromDate").value = "";
   document.getElementById("toDate").value = "";
   syncDateFields();
-  render(allData);
+  loadData();
 }
 
 // EXPORT EXCEL
@@ -922,8 +990,100 @@ async function loadRoster() {
     const res = await fetch("/employees", { credentials: "include" });
     if (!res.ok) return;
     const list = await res.json();
-    rosterCount = Array.isArray(list) ? list.length : 0;
+    rosterList = Array.isArray(list) ? list : [];
+    rosterCount = rosterList.length;
   } catch (e) { console.log(e); }
+}
+
+function todayIST() {
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+}
+
+// Who on the roster hasn't marked today. Computed from the month load so it
+// stays accurate even when the table is filtered to something else.
+function updateAbsent() {
+  const box = document.getElementById("absentList");
+  const sub = document.getElementById("absentSub");
+  if (!box) return;
+
+  if (!rosterList.length) {
+    box.innerHTML = `<div class="absent-empty">Add employees (top-right) to see who hasn't marked.</div>`;
+    if (sub) sub.innerText = "No employees added yet";
+    return;
+  }
+
+  const today = todayIST();
+  const present = new Set(allData.filter(r => r.date === today).map(r => lc(r.email)));
+  const absent = rosterList.filter(e => !present.has(lc(e.email)));
+
+  if (!absent.length) {
+    box.innerHTML = `<div class="absent-empty">🎉 Everyone on the roster has marked today.</div>`;
+    if (sub) sub.innerText = "All present";
+    return;
+  }
+
+  if (sub) sub.innerText = `${absent.length} not marked yet`;
+  box.innerHTML = absent.map(e => `<span class="absent-chip">${esc(e.name)}</span>`).join("");
+}
+
+// ---- Monthly summary ----
+function currentMonthValue() {
+  return todayIST().slice(0, 7); // YYYY-MM
+}
+function openSummary() {
+  const mi = document.getElementById("summaryMonth");
+  if (mi && !mi.value) mi.value = currentMonthValue();
+  document.getElementById("summaryModal").style.display = "flex";
+  loadSummary();
+}
+function closeSummary() { document.getElementById("summaryModal").style.display = "none"; }
+
+async function loadSummary() {
+  const month = document.getElementById("summaryMonth").value || currentMonthValue();
+  const body = document.getElementById("summaryBody");
+  const msg = document.getElementById("summaryMsg");
+  msg.innerText = "Loading…";
+  body.innerHTML = "";
+  try {
+    const res = await fetch("/attendance/summary?month=" + encodeURIComponent(month), { credentials: "include" });
+    const data = await res.json();
+    const rows = (data && data.rows) || [];
+    if (!rows.length) {
+      msg.innerText = "No employees or records for this month.";
+      return;
+    }
+    msg.innerText = `${rows.length} employee(s) · ${month}`;
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td>${esc(r.name)}</td>
+        <td>${r.days}</td>
+        <td>${r.wfh}</td>
+        <td>${r.office}</td>
+        <td>${r.site}</td>
+        <td>${r.leave}</td>
+        <td>${r.govt}</td>
+      </tr>`).join("");
+  } catch (err) {
+    console.log(err);
+    msg.innerText = "Couldn't load the summary.";
+  }
+}
+
+async function exportSummary() {
+  const month = document.getElementById("summaryMonth").value || currentMonthValue();
+  try {
+    const res = await fetch("/attendance/summary/excel?month=" + encodeURIComponent(month), { credentials: "include" });
+    if (!res.ok) { alert("Export failed"); return; }
+    const blob = await res.blob();
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `summary-${month}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (err) { console.log(err); alert("Export error"); }
 }
 
 // ---- Mark everyone ----
@@ -983,7 +1143,9 @@ async function loadEmployees() {
   try {
     const res = await fetch("/employees", { credentials: "include" });
     const data = await res.json();
-    rosterCount = Array.isArray(data) ? data.length : 0;
+    rosterList = Array.isArray(data) ? data : [];
+    rosterCount = rosterList.length;
+    updateAbsent();
     if (!data.length) {
       list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:10px;">No employees yet. Add your team above.</div>`;
       return;
@@ -1031,7 +1193,7 @@ async function deleteEmployee(id) {
   } catch (err) { console.log(err); }
 }
 
-["bulkModal", "employeesModal"].forEach(id => {
+["bulkModal", "employeesModal", "summaryModal"].forEach(id => {
   const m = document.getElementById(id);
   if (m) m.addEventListener("click", e => { if (e.target.id === id) m.style.display = "none"; });
 });
@@ -1043,6 +1205,10 @@ window.openEmployees = openEmployees;
 window.closeEmployees = closeEmployees;
 window.addEmployee = addEmployee;
 window.deleteEmployee = deleteEmployee;
+window.openSummary = openSummary;
+window.closeSummary = closeSummary;
+window.loadSummary = loadSummary;
+window.exportSummary = exportSummary;
 
 // INITIAL LOAD
 loadGreeting();

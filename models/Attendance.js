@@ -39,6 +39,11 @@ const attendanceSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    // Captured for Site Visits (and stored if sent for any type) as proof of presence.
+    location: {
+      lat: { type: Number, default: null },
+      lng: { type: Number, default: null },
+    },
   },
   {
     timestamps: true,
