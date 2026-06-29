@@ -175,6 +175,14 @@ app.use(
   attendanceRoutes
 );
 
+/* ---------------- EMPLOYEES (admin roster) ---------------- */
+
+app.use(
+  "/employees",
+  ensureAuth,
+  require("./routes/employees")
+);
+
 /* ---------------- ADMIN CHECK ---------------- */
 
 app.get("/api/check-admin", ensureAuth, (req, res) => {

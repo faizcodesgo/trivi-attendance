@@ -61,9 +61,16 @@
   /* MAIN */
   .main{ flex:1; padding:30px 32px; min-width:0; }
 
-  .page-head{ margin-bottom:22px; animation:fadeUp .6s ease both; }
+  .page-head{ margin-bottom:22px; animation:fadeUp .6s ease both; display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; }
   .page-head h1{ font-size:30px; margin-bottom:4px; }
   .page-head p{ color:var(--muted); font-size:15px; }
+  .head-actions{ display:flex; gap:10px; flex-shrink:0; }
+  .ha-btn{ width:auto; margin:0; padding:11px 18px; border:none; border-radius:11px; cursor:pointer; font-size:14px; font-weight:600; transition:transform .2s ease, background .2s ease; }
+  .ha-btn:hover{ transform:translateY(-2px); }
+  .ha-primary{ background:var(--maroon); color:#fff; box-shadow:0 8px 20px rgba(107,26,31,.25); }
+  .ha-primary:hover{ background:var(--maroon-deep); }
+  .ha-secondary{ background:#fff; color:var(--water-deep); border:1px solid var(--line); }
+  .ha-secondary:hover{ background:var(--aqua-soft); }
 
   /* OVERVIEW CARDS */
   .overview{
@@ -332,8 +339,14 @@
   <main class="main">
 
     <div class="page-head">
-      <h1 id="adminGreet">Good day 👋</h1>
-      <p id="adminDate">Here's your team today</p>
+      <div>
+        <h1 id="adminGreet">Good day 👋</h1>
+        <p id="adminDate">Here's your team today</p>
+      </div>
+      <div class="head-actions">
+        <button class="ha-btn ha-secondary" onclick="openEmployees()">Employees</button>
+        <button class="ha-btn ha-primary" onclick="openBulk()">Mark everyone</button>
+      </div>
     </div>
 
     <!-- OVERVIEW -->
@@ -465,10 +478,65 @@
   </div>
 </div>
 
+<!-- MARK EVERYONE MODAL -->
+<div class="modal" id="bulkModal">
+  <div class="modal-content">
+    <h3>Mark everyone</h3>
+    <p style="color:var(--muted);font-size:13px;margin:4px 0 16px;">Marks attendance for your whole employee list at once.</p>
+
+    <label style="font-size:12px;color:var(--muted);font-weight:500;">Date</label>
+    <input type="date" id="bulkDate" style="width:100%;padding:11px 13px;border:1px solid var(--line);border-radius:10px;background:var(--cream-soft);color:var(--ink);margin:6px 0 16px;">
+
+    <div style="font-size:12px;color:var(--muted);font-weight:500;margin-bottom:8px;">Work type (up to 2)</div>
+    <div class="checkbox-group" id="bulkTypes">
+      <label><input type="checkbox" value="Work From Home"> Work From Home</label>
+      <label><input type="checkbox" value="Office Management"> Office Management</label>
+      <label><input type="checkbox" value="Site Visit"> Site Visit</label>
+      <label><input type="checkbox" value="Leave"> Leave</label>
+      <label><input type="checkbox" value="Government Holiday"> Government Holiday</label>
+    </div>
+
+    <label style="display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px;cursor:pointer;color:var(--ink);">
+      <input type="checkbox" id="bulkOverwrite" style="width:17px;height:17px;accent-color:var(--maroon);">
+      Overwrite people who already marked that day
+    </label>
+
+    <p id="bulkMsg" style="margin-top:12px;font-size:13px;font-weight:500;min-height:18px;"></p>
+
+    <div class="modal-actions">
+      <button class="m-reset" onclick="closeBulk()">Cancel</button>
+      <button class="m-save" id="bulkSubmit" onclick="submitBulk()">Mark everyone</button>
+    </div>
+  </div>
+</div>
+
+<!-- EMPLOYEES MODAL -->
+<div class="modal" id="employeesModal">
+  <div class="modal-content">
+    <h3>Employees</h3>
+    <p style="color:var(--muted);font-size:13px;margin:4px 0 14px;">The people you can mark in bulk. Add your team here.</p>
+
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <input type="text" id="empName" placeholder="Name" style="flex:1;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--cream-soft);color:var(--ink);">
+      <input type="email" id="empEmail" placeholder="name@company.com" style="flex:1.3;min-width:0;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--cream-soft);color:var(--ink);">
+      <button class="m-save" style="width:auto;margin:0;padding:10px 16px;" onclick="addEmployee()">Add</button>
+    </div>
+
+    <p id="empMsg" style="font-size:13px;color:var(--maroon);margin-bottom:10px;min-height:18px;"></p>
+
+    <div id="empList" style="max-height:300px;overflow:auto;display:flex;flex-direction:column;gap:8px;"></div>
+
+    <div class="modal-actions">
+      <button class="m-reset" onclick="closeEmployees()">Close</button>
+    </div>
+  </div>
+</div>
+
 <script>
 
 let allData = [];
 let editId = null;
+let rosterCount = 0;
 
 // Greeting (admin name + date)
 async function loadGreeting() {
@@ -507,8 +575,11 @@ async function loadData() {
 
     if(loader){ loader.style.display = "none"; }
   } catch (err) {
-    console.log(err);
-    alert("Failed to load attendance");
+    console.log("Failed to load attendance", err);
+    const loader = document.getElementById("tableLoader");
+    if (loader) loader.style.display = "none";
+    const tbody = document.getElementById("tbody");
+    if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;color:var(--muted);">Couldn't load attendance. Please refresh.</td></tr>`;
   }
 }
 
@@ -571,17 +642,19 @@ function renderInsights(data) {
 
   const presentToday = data.filter(r => r.date === today).length;
   const weekCount = data.filter(r => r.date >= mondayStr).length;
-  const employees = new Set(data.map(r => r.email)).size;
+  const distinct = new Set(data.map(r => r.email)).size;
+  // Prefer the admin-managed roster size for an accurate "present / total".
+  const total = rosterCount || distinct;
 
   setNum("presentToday", presentToday, true);
-  document.getElementById("presentOf").innerText = employees ? `/ ${employees}` : "";
+  document.getElementById("presentOf").innerText = total ? `/ ${total}` : "";
   setNum("weekCount", weekCount);
-  setNum("empCount", employees);
+  setNum("empCount", total);
 
   const pill = document.getElementById("presentPill");
   if (pill) {
-    pill.innerText = employees
-      ? `${Math.round((presentToday / employees) * 100)}% marked today`
+    pill.innerText = total
+      ? `${Math.round((presentToday / total) * 100)}% marked today`
       : "No data yet";
   }
 
@@ -836,9 +909,140 @@ document.querySelectorAll('.control-group input[type="date"]').forEach(inp => {
 });
 syncDateFields();
 
+// =========================
+// EMPLOYEE ROSTER + BULK MARK
+// =========================
+
+async function loadRoster() {
+  try {
+    const res = await fetch("/employees", { credentials: "include" });
+    if (!res.ok) return;
+    const list = await res.json();
+    rosterCount = Array.isArray(list) ? list.length : 0;
+  } catch (e) { console.log(e); }
+}
+
+// ---- Mark everyone ----
+function openBulk() {
+  const di = document.getElementById("bulkDate");
+  if (di) di.value = new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+  document.querySelectorAll("#bulkTypes input").forEach(cb => cb.checked = false);
+  document.getElementById("bulkOverwrite").checked = false;
+  document.getElementById("bulkMsg").innerText = "";
+  document.getElementById("bulkModal").style.display = "flex";
+}
+function closeBulk() { document.getElementById("bulkModal").style.display = "none"; }
+
+async function submitBulk() {
+  const date = document.getElementById("bulkDate").value;
+  const overwrite = document.getElementById("bulkOverwrite").checked;
+  const workTypes = Array.from(document.querySelectorAll("#bulkTypes input:checked")).map(cb => cb.value);
+  const msg = document.getElementById("bulkMsg");
+  const btn = document.getElementById("bulkSubmit");
+
+  if (!date) { msg.style.color = "var(--maroon)"; msg.innerText = "Pick a date"; return; }
+  if (workTypes.length < 1) { msg.style.color = "var(--maroon)"; msg.innerText = "Select at least one work type"; return; }
+  if (workTypes.length > 2) { msg.style.color = "var(--maroon)"; msg.innerText = "Only 2 selections allowed"; return; }
+
+  btn.disabled = true; btn.innerText = "Marking…";
+  try {
+    const res = await fetch("/attendance/bulk", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ date, workTypes, overwrite })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.style.color = "var(--maroon)"; msg.innerText = data.message || "Failed"; return; }
+    msg.style.color = "var(--water)";
+    msg.innerText = `Done — ${data.created} added, ${data.updated} updated, ${data.skipped} left as-is (of ${data.total}).`;
+    loadData();
+  } catch (err) {
+    console.log(err);
+    msg.style.color = "var(--maroon)"; msg.innerText = "Server error";
+  } finally {
+    btn.disabled = false; btn.innerText = "Mark everyone";
+  }
+}
+
+// ---- Employees ----
+function openEmployees() {
+  document.getElementById("empMsg").innerText = "";
+  document.getElementById("employeesModal").style.display = "flex";
+  loadEmployees();
+}
+function closeEmployees() { document.getElementById("employeesModal").style.display = "none"; }
+
+async function loadEmployees() {
+  const list = document.getElementById("empList");
+  list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:8px;">Loading…</div>`;
+  try {
+    const res = await fetch("/employees", { credentials: "include" });
+    const data = await res.json();
+    rosterCount = Array.isArray(data) ? data.length : 0;
+    if (!data.length) {
+      list.innerHTML = `<div style="color:var(--muted);font-size:13px;padding:10px;">No employees yet. Add your team above.</div>`;
+      return;
+    }
+    list.innerHTML = data.map(e => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--cream-soft);border:1px solid var(--line);border-radius:12px;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:600;font-size:14px;color:var(--ink);">${e.name}</div>
+          <div style="font-size:12px;color:var(--muted);">${e.email}</div>
+        </div>
+        <button class="danger" style="width:auto;margin:0;" onclick="deleteEmployee('${e._id}')">Remove</button>
+      </div>`).join("");
+  } catch (err) {
+    console.log(err);
+    list.innerHTML = `<div style="color:var(--maroon);font-size:13px;padding:10px;">Couldn't load employees.</div>`;
+  }
+}
+
+async function addEmployee() {
+  const name = document.getElementById("empName").value.trim();
+  const email = document.getElementById("empEmail").value.trim();
+  const msg = document.getElementById("empMsg");
+  if (!name || !email) { msg.innerText = "Enter a name and email"; return; }
+  try {
+    const res = await fetch("/employees", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name, email })
+    });
+    const data = await res.json();
+    if (!res.ok) { msg.innerText = data.message || "Failed to add"; return; }
+    msg.innerText = "";
+    document.getElementById("empName").value = "";
+    document.getElementById("empEmail").value = "";
+    loadEmployees();
+  } catch (err) { console.log(err); msg.innerText = "Server error"; }
+}
+
+async function deleteEmployee(id) {
+  if (!confirm("Remove this employee from the list?")) return;
+  try {
+    await fetch("/employees/" + id, { method: "DELETE", credentials: "include" });
+    loadEmployees();
+  } catch (err) { console.log(err); }
+}
+
+["bulkModal", "employeesModal"].forEach(id => {
+  const m = document.getElementById(id);
+  if (m) m.addEventListener("click", e => { if (e.target.id === id) m.style.display = "none"; });
+});
+
+window.openBulk = openBulk;
+window.closeBulk = closeBulk;
+window.submitBulk = submitBulk;
+window.openEmployees = openEmployees;
+window.closeEmployees = closeEmployees;
+window.addEmployee = addEmployee;
+window.deleteEmployee = deleteEmployee;
+
 // INITIAL LOAD
 loadGreeting();
-loadData();
+loadRoster().then(loadData);
 
 </script>
 

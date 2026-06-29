@@ -156,6 +156,81 @@ const updated = await Attendance.findOneAndUpdate(
   }
 });
 
+// ---------------- BULK MARK (admin) ----------------
+// Mark attendance for the whole roster at once (e.g. a government holiday).
+// Default: only fills people who haven't marked that day. If overwrite=true,
+// it replaces everyone's entry for that date with the chosen work type(s).
+router.post("/bulk", ensureAuth, ensureAdmin, async (req, res) => {
+  try {
+    const Employee = require("../models/Employee");
+
+    let { date, workTypes, overwrite } = req.body;
+
+    if (typeof workTypes === "string") workTypes = [workTypes];
+    workTypes = (workTypes || []).filter(Boolean);
+
+    if (workTypes.length < 1) {
+      return res.status(400).json({ success: false, message: "Select at least one work type" });
+    }
+    if (workTypes.length > 2) {
+      return res.status(400).json({ success: false, message: "Only 2 selections allowed" });
+    }
+
+    const now = new Date();
+    if (!date) {
+      date = now.toLocaleDateString("en-CA", { timeZone: "Asia/Kolkata" });
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return res.status(400).json({ success: false, message: "Invalid date" });
+    }
+
+    const day = new Date(date + "T00:00:00+05:30").toLocaleDateString("en-US", {
+      weekday: "long",
+      timeZone: "Asia/Kolkata"
+    });
+    const time = now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" });
+
+    const employees = await Employee.find();
+    if (!employees.length) {
+      return res.status(400).json({
+        success: false,
+        message: "Your employee list is empty. Add employees first."
+      });
+    }
+
+    let created = 0, updated = 0, skipped = 0;
+
+    for (const emp of employees) {
+      const existing = await Attendance.findOne({ email: emp.email, date });
+
+      // Default behaviour: don't touch people who already marked that day.
+      if (existing && !overwrite) {
+        skipped++;
+        continue;
+      }
+
+      await Attendance.findOneAndUpdate(
+        { email: emp.email, date },
+        { name: emp.name, email: emp.email, date, day, time, workTypes },
+        { upsert: true, new: true }
+      );
+
+      if (existing) updated++;
+      else created++;
+    }
+
+    res.json({
+      success: true,
+      total: employees.length,
+      created,
+      updated,
+      skipped
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 // ---------------- GET MY OWN ----------------
 // Any logged-in employee can read ONLY their own attendance records.
 router.get("/mine", ensureAuth, async (req, res) => {
