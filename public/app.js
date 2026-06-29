@@ -182,19 +182,20 @@ function getLocation() {
   });
 }
 
-// Site Visit needs a live camera photo + location — reflect that in the UI.
+// Open the camera (live photo) or the gallery (existing photo) from one control.
+function pickPhoto(mode) {
+  const img = document.getElementById("image");
+  if (!img) return;
+  if (mode === "camera") img.setAttribute("capture", "environment");
+  else img.removeAttribute("capture");
+  img.click();
+}
+
+// Show the proof note when Site Visit is selected.
 function updateSiteVisitUI() {
   const site = document.querySelector('input[name="workTypes"][value="Site Visit"]');
   const on = !!(site && site.checked);
-  const up = document.getElementById("uploadBtn");
   const note = document.getElementById("proofNote");
-  const img = document.getElementById("image");
-
-  if (img) {
-    if (on) img.setAttribute("capture", "environment");
-    else img.removeAttribute("capture");
-  }
-  if (up) up.innerText = on ? "📷 Take site photo (required)" : "📷 Upload Image (optional)";
   if (note) note.style.display = on ? "block" : "none";
 }
 

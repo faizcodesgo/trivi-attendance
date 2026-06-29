@@ -23,6 +23,25 @@ app.set("trust proxy", 1);
 
 connectDB();
 
+/* ---------------- ONE-TIME DATA NORMALIZATION ---------------- */
+// We now store attendance emails in lowercase. Lowercase any pre-existing
+// records once so old history still matches the new lowercase lookups.
+// Idempotent: after the first run it matches nothing and does nothing.
+(async function normalizeAttendanceEmails() {
+  try {
+    const Attendance = require("./models/Attendance");
+    const result = await Attendance.updateMany(
+      { email: { $regex: /[A-Z]/ } },
+      [{ $set: { email: { $toLower: "$email" } } }]
+    );
+    if (result.modifiedCount) {
+      console.log(`Normalized ${result.modifiedCount} attendance email(s) to lowercase`);
+    }
+  } catch (err) {
+    console.log("Email normalization skipped:", err.message);
+  }
+})();
+
 /* ---------------- PUSH SETUP ---------------- */
 
 webpush.setVapidDetails(
