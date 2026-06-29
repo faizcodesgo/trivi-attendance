@@ -429,6 +429,21 @@ button:hover{ transform:translateY(-2px); }
 .login-left p{ font-size:16px; color:rgba(234,250,245,.82); line-height:1.75; }
 .login-left p .by{ display:block; margin-top:10px; font-size:13px; color:var(--aqua-bright); }
 
+.login-hero-art{
+  width:100%; max-width:360px;
+  margin:30px auto 0; display:block;
+  border-radius:18px;
+  border:3px solid rgba(234,250,245,.9);
+  box-shadow:var(--shadow-lg);
+  object-fit:cover;
+  animation:floatY 6.5s ease-in-out infinite;
+}
+.login-hero-caption{
+  display:block; margin-top:12px;
+  font-size:12px; letter-spacing:.03em;
+  color:var(--aqua-bright);
+}
+
 .login-right{
   flex:1;
   display:flex; justify-content:center; align-items:center;
