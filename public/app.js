@@ -38,6 +38,11 @@ async function submitAttendance() {
     return;
   }
 
+  const selectedTypes = Array.from(checked).map(cb => cb.value);
+
+  // Optimistic: show it as marked immediately (reconciled after the server replies).
+  applyOptimistic(selectedTypes);
+
   if (submitBtn) {
 
     submitBtn.disabled = true;
@@ -111,14 +116,17 @@ async function submitAttendance() {
       msg.innerText =
         data.message || "Failed to submit";
 
+      // Roll back the optimistic update to the real server state.
+      loadMine();
+
       return;
     }
 
     msg.innerText =
-      "Attendance marked successfully ✓";
+      "Attendance marked successfully";
 
-    // Refresh the employee's own stats + feed right away.
-    if (typeof loadMine === "function") loadMine();
+    // Reconcile with the authoritative record (real time, image, etc.).
+    loadMine();
 
     document
       .querySelectorAll(
@@ -146,6 +154,9 @@ async function submitAttendance() {
 
     msg.innerText =
       "Server error";
+
+    // Roll back the optimistic update.
+    loadMine();
 
   } finally {
 
@@ -460,15 +471,50 @@ function renderFeed(records) {
   }).join("");
 }
 
-async function loadMine() {
+// Cache of the employee's own records so we can render optimistically.
+let myRecords = [];
+
+// Shimmer placeholders shown while the feed is loading.
+function renderFeedSkeleton() {
+  const feed = document.getElementById("feed");
+  if (!feed) return;
+  feed.innerHTML = Array.from({ length: 3 }).map(() => `
+    <div class="sk-feed-item">
+      <div class="sk sk-av"></div>
+      <div class="sk-lines">
+        <div class="sk sk-line"></div>
+        <div class="sk sk-line"></div>
+      </div>
+    </div>`).join("");
+}
+
+// Optimistically reflect a just-submitted mark before the server replies.
+function applyOptimistic(workTypes) {
+  const today = istDateStr();
+  const now = new Date();
+  const time = now.toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata" });
+  const day = now.toLocaleDateString("en-US", { weekday: "long", timeZone: "Asia/Kolkata" });
+
+  const rec = { date: today, day, time, workTypes, imageUrl: null, _optimistic: true };
+  const idx = myRecords.findIndex(r => r.date === today);
+  if (idx >= 0) myRecords[idx] = { ...myRecords[idx], ...rec };
+  else myRecords = [rec, ...myRecords];
+
+  setHeroStatus(myRecords);
+  renderMyStats(myRecords);
+  renderFeed(myRecords);
+}
+
+async function loadMine(showSkeleton) {
+  if (showSkeleton) renderFeedSkeleton();
   try {
     const res = await fetch("/attendance/mine", { credentials: "include" });
     const data = await res.json();
-    const records = Array.isArray(data) ? data : [];
+    myRecords = Array.isArray(data) ? data : [];
 
-    setHeroStatus(records);
-    renderMyStats(records);
-    renderFeed(records);
+    setHeroStatus(myRecords);
+    renderMyStats(myRecords);
+    renderFeed(myRecords);
   } catch (err) {
     console.log("Failed to load my attendance", err);
     const feed = document.getElementById("feed");
@@ -492,7 +538,7 @@ function goDashboard() {
 
 renderTodayDate();
 checkAdmin();
-loadMine();
+loadMine(true);
 
 /* =========================
    PUSH NOTIFICATIONS

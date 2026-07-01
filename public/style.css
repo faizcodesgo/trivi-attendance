@@ -7,42 +7,57 @@
    figures and micro-labels. Variable names kept stable for the dashboard.
 ========================= */
 :root{
-  /* accent / brand */
-  --maroon:#6e1d22;
-  --maroon-deep:#54171b;
-  --maroon-soft:#8a2f34;
+  /* PALETTE: ivory · marigold · burnt orange · rust · light greenery */
+  --ivory:#f6f0e1;
+  --ivory-soft:#fbf6ea;
+  --marigold:#e6a52c;
+  --marigold-deep:#cf8f1c;
+  --burnt:#c25a2a;
+  --burnt-deep:#a8481f;
+  --rust:#9a3c1e;
+  --rust-deep:#7f3016;
+  --greenery:#8ba86b;
+  --greenery-deep:#5f7a45;
 
-  /* deep panel + muted green (flat, never gradient candy) */
-  --water-deep:#11231d;   /* dark panels, sidebar */
-  --water:#23574a;        /* secondary accents, figures on light */
-  --water-soft:#2c6555;
-  --aqua:#2f7d68;
-  --aqua-bright:#3f8f78;
-  --aqua-soft:#eef2ef;    /* pale tint */
+  /* semantic roles (variable names kept stable for the dashboard) */
+  --maroon:#c25a2a;         /* primary action = burnt orange */
+  --maroon-deep:#a8481f;    /* hover = deeper burnt / rust */
+  --maroon-soft:#d5824f;
 
-  --gold:#b98328;
-  --gold-ink:#3a2a08;
+  --water-deep:#2a1c0e;     /* espresso panels, sidebar, hero */
+  --water:#5f7a45;          /* greenery-deep: secondary accents on light */
+  --water-soft:#6d8a50;
+  --aqua:#8ba86b;           /* light greenery */
+  --aqua-bright:#9cb87e;
+  --aqua-soft:#eef2e2;      /* pale greenery tint */
 
-  /* neutrals */
-  --canvas:#f4f3ee;
-  --cream:#f4f3ee;
-  --cream-soft:#faf9f5;
-  --paper:#ffffff;
-  --ink:#1c1b18;
-  --ink-soft:#34322d;
-  --muted:#74716a;
-  --faint:#9b988f;
-  --line:#e5e2da;
-  --line-strong:#d6d2c8;
-  --green:#23574a;
+  --gold:#e6a52c;           /* marigold */
+  --gold-ink:#4a3208;
 
-  --navy:#11231d;
-  --navy-soft:#23574a;
+  /* neutrals (warm) */
+  --canvas:#f6f0e1;
+  --cream:#f6f0e1;
+  --cream-soft:#fbf6ea;
+  --paper:#fffdf7;
+  --ink:#2d2114;
+  --ink-soft:#4c3f2c;
+  --muted:#8a7c64;
+  --faint:#b3a586;
+  --line:#e9e0cc;
+  --line-strong:#dbd0b6;
+  --green:#5f7a45;
 
-  --shadow:0 1px 2px rgba(22,20,16,.05);
-  --shadow-lg:0 6px 22px rgba(22,20,16,.07);
+  --navy:#2a1c0e;
+  --navy-soft:#5f7a45;
+
+  --shadow:0 1px 2px rgba(60,40,18,.05);
+  --shadow-lg:0 6px 22px rgba(60,40,18,.08);
   --radius:10px;
   --radius-sm:8px;
+
+  /* skeleton loaders */
+  --sk-base:#ece2cd;
+  --sk-sheen:rgba(255,255,255,.55);
 
   --font-head:'Public Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   --font-body:'Public Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
@@ -138,9 +153,9 @@ h1,h2,h3{
   position:relative;
   border-radius:14px;
   padding:24px 22px;
-  color:#e8ece9;
+  color:#f2ead6;
   background:var(--water-deep);
-  border:1px solid #1e3a30;
+  border:1px solid #3f2e1a;
 }
 .hero-status{
   display:inline-flex;
@@ -152,13 +167,13 @@ h1,h2,h3{
   border-radius:6px;
   background:rgba(255,255,255,.07);
   border:1px solid rgba(255,255,255,.10);
-  color:#bcd0c9;
+  color:#d3c6a8;
 }
 .hero-status .dot{
   width:7px;height:7px;border-radius:50%;
-  background:#5fb89e;
+  background:#e9a930;
 }
-.hero-status.done .dot{ background:#8fd3bd; }
+.hero-status.done .dot{ background:#b7c98f; }
 .hero-card h2{
   color:#fff;
   font-size:21px;
@@ -168,7 +183,7 @@ h1,h2,h3{
 }
 .hero-card .hero-sub{
   font-size:13.5px;
-  color:rgba(232,236,233,.72);
+  color:rgba(242,234,214,.72);
 }
 
 /* ---- work-type options inside hero ---- */
@@ -186,7 +201,7 @@ h1,h2,h3{
   border-radius:var(--radius-sm);
   background:rgba(255,255,255,.045);
   border:1px solid rgba(255,255,255,.12);
-  color:#dfe6e2;
+  color:#ece1c9;
   font-size:13.5px;
   font-weight:500;
   cursor:pointer;
@@ -198,7 +213,7 @@ h1,h2,h3{
 }
 .checkbox-item input{
   width:17px;height:17px;
-  accent-color:#5fb89e;
+  accent-color:#e9a930;
   cursor:pointer;
   flex-shrink:0;
 }
@@ -219,7 +234,7 @@ h1,h2,h3{
   border:none !important;
   border-radius:0 !important;
   background:rgba(255,255,255,.04);
-  color:#dfe6e2;
+  color:#ece1c9;
   font-weight:500;
   font-size:13.5px;
   cursor:pointer;
@@ -231,7 +246,7 @@ h1,h2,h3{
 .image-name{
   margin-top:10px;
   text-align:center;
-  color:rgba(232,236,233,.6);
+  color:rgba(242,234,214,.6);
   font-size:10.5px;
 }
 
@@ -241,10 +256,10 @@ h1,h2,h3{
   border-radius:var(--radius-sm);
   font-size:12.5px;
   font-weight:400;
-  color:#cfe0d9;
+  color:#e6d9bf;
   background:rgba(255,255,255,.05);
   border:1px solid rgba(255,255,255,.12);
-  border-left:2px solid #5fb89e;
+  border-left:2px solid #e9a930;
   border-radius:0 var(--radius-sm) var(--radius-sm) 0;
 }
 
@@ -270,7 +285,7 @@ button{
 
 .reset-btn{
   background:transparent;
-  color:#cfe0d9;
+  color:#e6d9bf;
   border:1px solid rgba(255,255,255,.18);
 }
 .reset-btn:hover{ background:rgba(255,255,255,.07); }
@@ -304,7 +319,7 @@ button{
 #msg{
   margin-top:14px;
   text-align:center;
-  color:#cfe0d9;
+  color:#e6d9bf;
   font-weight:500;
   font-size:13px;
 }
@@ -314,7 +329,7 @@ button{
   margin-top:14px;
   background:rgba(255,255,255,.06);
   border:1px solid rgba(255,255,255,.14);
-  color:#dfe6e2;
+  color:#ece1c9;
   padding:14px;
   border-radius:var(--radius-sm);
   font-weight:400;
@@ -326,7 +341,7 @@ button{
 .spinner{
   width:17px;height:17px;
   border:2.5px solid rgba(255,255,255,.22);
-  border-top-color:#8fd3bd;
+  border-top-color:#b7c98f;
   border-radius:50%;
   animation:spin .7s linear infinite;
   flex-shrink:0;
@@ -339,7 +354,7 @@ button{
 .progress span{
   position:absolute; top:0; left:-40%;
   height:100%; width:40%; border-radius:5px;
-  background:#5fb89e;
+  background:#e9a930;
   animation:indeterminate 1.1s ease-in-out infinite;
 }
 .loading-btn{ position:relative; pointer-events:none; opacity:.85; }
@@ -442,9 +457,9 @@ button{
   border-radius:var(--radius);
   font-size:13.5px;
   font-weight:500;
-  color:#1d4a3e;
-  background:#eef3f0;
-  border:1px solid #d6e3dd;
+  color:#4a5f34;
+  background:#eef2e2;
+  border:1px solid #dbe4c9;
   border-left:2px solid var(--green);
 }
 .done-banner .db-check{
@@ -471,7 +486,7 @@ button{
 }
 .login-left-content{
   position:relative; text-align:left;
-  color:#e8ece9; max-width:420px;
+  color:#f2ead6; max-width:420px;
 }
 .login-hero-logo{
   width:64px;height:64px; object-fit:contain;
@@ -479,10 +494,10 @@ button{
   margin-bottom:26px;
 }
 .login-left h1{ font-size:38px; color:#fff; margin-bottom:14px; line-height:1.1; font-weight:600; letter-spacing:-.02em; }
-.login-left p{ font-size:15px; color:rgba(232,236,233,.72); line-height:1.7; }
+.login-left p{ font-size:15px; color:rgba(242,234,214,.72); line-height:1.7; }
 .login-left p .by{
   display:block; margin-top:12px; font-size:11px;
-  color:#7fbfad; font-family:var(--font-mono);
+  color:#e9a930; font-family:var(--font-mono);
   text-transform:uppercase; letter-spacing:.1em;
 }
 
@@ -496,7 +511,7 @@ button{
 .login-hero-caption{
   display:block; margin-top:12px;
   font-size:10.5px; letter-spacing:.1em;
-  color:#7fbfad; font-family:var(--font-mono);
+  color:#e9a930; font-family:var(--font-mono);
   text-transform:uppercase;
 }
 
@@ -538,9 +553,48 @@ button:focus-visible,
 input:focus-visible,
 a:focus-visible{
   outline:none;
-  box-shadow:0 0 0 2px var(--canvas), 0 0 0 4px rgba(35,87,74,.5);
+  box-shadow:0 0 0 2px var(--canvas), 0 0 0 4px rgba(194,90,42,.55);
   border-radius:var(--radius-sm);
 }
+
+/* =========================
+   SKELETON LOADERS
+========================= */
+.sk{
+  position:relative;
+  overflow:hidden;
+  background:var(--sk-base);
+  border-radius:6px;
+}
+.sk::after{
+  content:"";
+  position:absolute; inset:0;
+  transform:translateX(-100%);
+  background:linear-gradient(90deg,transparent,var(--sk-sheen),transparent);
+  animation:shimmer 1.35s infinite;
+}
+.sk-line{ height:11px; }
+.sk-tile{
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:16px 14px;
+}
+.sk-tile .sk{ height:24px; width:46%; }
+.sk-tile .sk.small{ height:9px; width:70%; margin-top:10px; }
+.sk-feed-item{
+  display:flex; align-items:center; gap:13px;
+  background:var(--paper);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  padding:12px 14px;
+}
+.sk-feed-item .sk-av{ width:40px; height:40px; border-radius:var(--radius-sm); flex-shrink:0; }
+.sk-feed-item .sk-lines{ flex:1; display:flex; flex-direction:column; gap:8px; }
+.sk-feed-item .sk-lines .sk:first-child{ width:55%; }
+.sk-feed-item .sk-lines .sk:last-child{ width:32%; }
+
+@keyframes shimmer{ 100%{ transform:translateX(100%); } }
 
 @keyframes spin{ to{ transform:rotate(360deg); } }
 @keyframes indeterminate{ 0%{ left:-40%; } 100%{ left:100%; } }

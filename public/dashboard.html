@@ -25,8 +25,8 @@
     display:flex;
     flex-direction:column;
     background:var(--water-deep);
-    color:#dfe6e2;
-    border-right:1px solid #1e3a30;
+    color:#ece1c9;
+    border-right:1px solid #3f2e1a;
   }
   .brand{ display:flex; align-items:center; gap:11px; margin-bottom:28px; }
   .brand img{ width:36px; height:36px; object-fit:contain; background:#fff; border-radius:8px; padding:5px; }
@@ -35,7 +35,7 @@
   .nav{ display:flex; flex-direction:column; gap:3px; }
   .nav a{
     text-decoration:none;
-    color:rgba(223,230,226,.78);
+    color:rgba(236,225,201,.78);
     padding:10px 12px;
     border-radius:var(--radius-sm);
     font-size:14px;
@@ -92,17 +92,17 @@
 
   /* hero "present today" = solid dark panel */
   .ov-hero{
-    color:#e8ece9;
+    color:#f2ead6;
     background:var(--water-deep);
-    border:1px solid #1e3a30;
+    border:1px solid #3f2e1a;
   }
-  .ov-hero .ov-label{ color:rgba(232,236,233,.7); }
+  .ov-hero .ov-label{ color:rgba(242,234,214,.7); }
   .ov-hero .ov-num{ color:#fff; font-size:40px; }
-  .ov-hero .ov-num small{ font-size:18px; color:rgba(232,236,233,.6); font-family:var(--font-mono); }
+  .ov-hero .ov-num small{ font-size:18px; color:rgba(242,234,214,.6); font-family:var(--font-mono); }
   .ov-hero .pill{
     display:inline-block; margin-top:12px;
     background:rgba(255,255,255,.10);
-    color:#bcd0c9; font-size:11px; font-weight:500;
+    color:#d3c6a8; font-size:11px; font-weight:500;
     padding:5px 10px; border-radius:6px;
     font-family:var(--font-mono); letter-spacing:.03em;
   }
@@ -130,11 +130,11 @@
     width:100%;
     max-width:40px;
     border-radius:4px 4px 0 0;
-    background:#e3ebe7;
+    background:#eae1cd;
     position:relative;
     transition:height .5s cubic-bezier(.22,1,.36,1);
   }
-  .bar.peak{ background:var(--green); }
+  .bar.peak{ background:var(--gold); }
   .bar .bar-val{
     position:absolute; top:-19px; left:0; right:0;
     text-align:center; font-size:11px; font-weight:600; color:var(--ink); font-family:var(--font-mono);
@@ -175,7 +175,7 @@
 
   /* absent today */
   .absent-list{ display:flex; flex-wrap:wrap; gap:7px; }
-  .absent-chip{ font-size:12.5px; font-weight:500; color:var(--maroon); background:#fff; border:1px solid rgba(110,29,34,.22); padding:6px 11px; border-radius:6px; }
+  .absent-chip{ font-size:12.5px; font-weight:500; color:var(--maroon); background:#fff; border:1px solid rgba(194,90,42,.22); padding:6px 11px; border-radius:6px; }
   .absent-empty{ color:var(--muted); font-size:13px; }
 
   /* monthly summary table */
@@ -247,8 +247,8 @@
   }
   .edit{ background:transparent; color:var(--ink-soft); border:1px solid var(--line-strong); }
   .edit:hover{ border-color:var(--muted); }
-  .danger{ background:transparent; color:var(--maroon); border:1px solid rgba(110,29,34,.28); }
-  .danger:hover{ background:rgba(110,29,34,.05); }
+  .danger{ background:transparent; color:var(--maroon); border:1px solid rgba(194,90,42,.28); }
+  .danger:hover{ background:rgba(194,90,42,.05); }
 
   .image-preview{ width:42px; height:42px; object-fit:cover; border-radius:var(--radius-sm); cursor:pointer; transition:opacity .15s ease; }
   .image-preview:hover{ opacity:.82; }
@@ -259,7 +259,7 @@
   .modal{
     display:none; position:fixed; inset:0;
     justify-content:center; align-items:center;
-    background:rgba(17,35,29,.45); z-index:50;
+    background:rgba(42,28,14,.5); z-index:50;
   }
   .modal-content{
     width:90%; max-width:420px; padding:24px; border-radius:12px;
@@ -286,7 +286,7 @@
   .skeleton-wrapper{ display:flex; flex-direction:column; gap:10px; padding:10px; }
   .skeleton-row{
     height:46px; border-radius:var(--radius-sm);
-    background:linear-gradient(90deg,#eeece6,#f6f5f1,#eeece6);
+    background:linear-gradient(90deg,#ece2cd,#f6efdd,#ece2cd);
     background-size:200% 100%; animation:skeletonMove 1.3s infinite;
   }
   @keyframes skeletonMove{ 0%{ background-position:200% 0; } 100%{ background-position:-200% 0; } }
@@ -301,7 +301,7 @@
     .sidebar{
       width:100%; height:auto; position:relative;
       flex-direction:row; align-items:center; flex-wrap:wrap; gap:8px; padding:14px 16px;
-      border-right:none; border-bottom:1px solid #1e3a30;
+      border-right:none; border-bottom:1px solid #3f2e1a;
     }
     .brand{ margin-bottom:0; }
     .nav{ flex-direction:row; flex-wrap:wrap; gap:4px; margin-left:6px; }
@@ -620,6 +620,19 @@ async function loadData(qs) {
     const loader = document.getElementById("tableLoader");
     if(loader){ loader.style.display = "flex"; }
 
+    // Shimmer placeholders in the live feed while loading.
+    const live = document.getElementById("liveFeed");
+    if (live) {
+      live.innerHTML = Array.from({ length: 4 }).map(() => `
+        <div class="live-item">
+          <div class="sk sk-av" style="width:34px;height:34px;"></div>
+          <div class="sk-lines" style="flex:1;">
+            <div class="sk sk-line"></div>
+            <div class="sk sk-line"></div>
+          </div>
+        </div>`).join("");
+    }
+
     // No query = current month (server default), keeping the dashboard fast.
     const url = "/attendance" + (qs ? ("?" + qs) : "");
     const res = await fetch(url, { credentials: "include" });
@@ -637,6 +650,8 @@ async function loadData(qs) {
     if (loader) loader.style.display = "none";
     const tbody = document.getElementById("tbody");
     if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="padding:24px;color:var(--muted);">Couldn't load attendance. Please refresh.</td></tr>`;
+    const live = document.getElementById("liveFeed");
+    if (live) live.innerHTML = `<div class="live-empty">Couldn't load.</div>`;
   }
 }
 
@@ -857,15 +872,22 @@ async function exportExcel() {
   }
 }
 
-// DELETE
+// DELETE (optimistic: remove immediately, restore on failure)
 async function deleteEntry(id) {
   if (!confirm("Delete this attendance?")) return;
+
+  const prev = allData;
+  allData = allData.filter(x => x._id !== id);
+  render(allData); renderInsights(allData); updateAbsent();
+
   try {
-    await fetch("/attendance/" + id, { method: "DELETE", credentials: "include" });
-    loadData();
+    const res = await fetch("/attendance/" + id, { method: "DELETE", credentials: "include" });
+    if (!res.ok) throw new Error("delete failed");
   } catch (err) {
     console.log(err);
-    alert("Delete failed");
+    allData = prev;
+    render(allData); renderInsights(allData); updateAbsent();
+    alert("Delete failed — the row was restored.");
   }
 }
 
@@ -891,19 +913,28 @@ async function saveEdit() {
   if (selected.length === 0) { alert("Select at least one option"); return; }
   if (selected.length > 2) { alert("Only 2 selections allowed"); return; }
 
+  const id = editId;
+
+  // Optimistic: apply the change locally and close the modal right away.
+  const prev = allData.map(x => ({ ...x }));
+  const item = allData.find(x => x._id === id);
+  if (item) item.workTypes = selected;
+  render(allData); renderInsights(allData);
+  document.getElementById("editModal").style.display = "none";
+
   try {
-    await fetch("/attendance/" + editId, {
+    const res = await fetch("/attendance/" + id, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ workTypes: selected })
     });
-
-    document.getElementById("editModal").style.display = "none";
-    loadData();
+    if (!res.ok) throw new Error("update failed");
   } catch (err) {
     console.log(err);
-    alert("Update failed");
+    allData = prev;
+    render(allData); renderInsights(allData);
+    alert("Update failed — the change was reverted.");
   }
 }
 
